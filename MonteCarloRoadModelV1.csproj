@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Users\fritz\source\repos\jcass_main\JCass_Core\JCass_Core.csproj" />
+    <ProjectReference Include="..\..\..\Users\fritz\source\repos\jcass_main\JCass_ModelCore\JCass_ModelCore.csproj" />
+  </ItemGroup>
+
+  <Target Name="CopyDllToDestination" AfterTargets="Build">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="C:\Users\fritz\Juno Services Dropbox\projects\nzta\2026\sh_forecast_model\monte_carlo\cassandra\domain_model\" />
+  </Target>
+
+</Project>
