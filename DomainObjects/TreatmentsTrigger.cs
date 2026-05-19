@@ -29,7 +29,7 @@ public class TreatmentsTrigger
         }
 
         // Check if the segment passes the Candidate Selection checks. If not, return an empty list.
-        if (segment.CandidateSelectionOutcome != "ok") return triggeredTreatments;
+        if (segment.CandidateSelectionOutcome.StartsWith("ok") == false) return triggeredTreatments;
 
         // Although we check if Periods to Next Treatment (i.e. committed) in the Candidate Selection, we need to do it 
         // again here, because the Candidate Selection result was last evaluated at the last epoch, while the periods to

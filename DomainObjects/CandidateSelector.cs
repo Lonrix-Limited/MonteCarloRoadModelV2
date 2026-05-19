@@ -20,6 +20,7 @@ public static class CandidateSelector
 
         if (TriggerChipseals.NextSurfacingIsChipsealTreatment(segment))
         {
+            if (segment.SecondCoatNeeded) return "ok - 2nd coat needed";
             if (segment.SurfaceDistressIndex < constants.CSMinSDIToTreat &&
                 segment.PavementDistressIndex < constants.CSMinPDIToTreat) return "pdi and sdi below threshold";
             if (segment.SurfaceAchievedLifePercent < constants.CSMinSlaToTreatCs) return "sla too low";
