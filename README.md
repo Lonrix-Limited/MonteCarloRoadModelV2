@@ -1,3 +1,9 @@
+
+# Version Note:
+This is the first version of the model. It was pinned because it was being used in
+production by one client while further refinements on the model were being done. For
+a more up-to-date version, see [MonteCarloRoadModelV2.](https://github.com/Lonrix-Limited/MonteCarloRoadModelV2)
+
 # MonteCarloRoadModelV1
 
 A stochastic road pavement deterioration **Domain Model** for the
