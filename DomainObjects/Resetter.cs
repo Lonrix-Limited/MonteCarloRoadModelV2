@@ -76,7 +76,7 @@ public class Resetter
 
         
         // Texture Depth               
-        newValue = GetTextureDepthResetValue(segment, _domainModel.SubModels, treatmentTypeCode, _frameworkModel.Random); //Reset value.
+        newValue = GetTextureDepthResetValue(segment, _domainModel.SubModels, _frameworkModel.Random); //Reset value.
         segment.TextureIncrement = Incrementer.GetTextureIncrementForEpisode(segment, _domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants); //Get new increment for new eposode.        
         residual = Incrementer.GetTextureResidual(_domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants, newValue);
         segment.TextureMeanLatent = newValue;
@@ -353,15 +353,15 @@ public class Resetter
     /// Gets a simulated Texture Depth Reset value for the given road segment based on the appropriate model for the surface class and treatment type.
     /// </summary>
     /// <param name="segment">Segment to simulate the Texture Depth Reset value for</param>
-    /// <param name="subModels">Sub-model definitions to use for the simulation</param>
-    /// <param name="treatmentTypeCode">Code representing the type of treatment (e.g., "resurf" or "rehab")</param>
+    /// <param name="subModels">Sub-model definitions to use for the simulation</param>    
     /// <param name="random">Random number generator to use for the simulation</param>
     /// <returns>The simulated Texture Depth  Reset value</returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public static double GetTextureDepthResetValue(RoadSegmentMC segment, SubModelDefinitions subModels, string treatmentTypeCode, Random random)
+    public static double GetTextureDepthResetValue(RoadSegmentMC segment, SubModelDefinitions subModels, Random random)
     {
-        var inputParameters = GetInputParametersForSegment(segment);
-        return subModels.TextureResetSimulator.GetSimulatedValue(inputParameters, random); //Texture reset does not vary by surface class, so we can use the same model for all segments regardless of surface class.        
+        var inputParameters = GetInputParametersForSegment(segment);        
+        double resetValue = subModels.TextureResetSimulator.GetSimulatedValue(inputParameters, random); //Texture reset does not vary by treatment class, so we can use the same model for all segments regardless of treatment.                
+        return resetValue;
     }
 
     #endregion

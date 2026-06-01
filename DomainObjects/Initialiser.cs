@@ -267,22 +267,20 @@ public class Initialiser
     /// <returns></returns>
     private double GetInitialTextureValue(RoadSegmentMC segment)
     {
+
         double surveyAge = GetHSDSurveyAge(segment);
 
-        // If segment has been rehabilitated, return the lookup value for the Texture reset
+        // If segment has been resurfaced or rehabilitated, return the lookup value for the Texture reset
         bool hasBeenRehabilitated = segment.PavementAge < surveyAge;
-        if (hasBeenRehabilitated)
-        {
-            return Resetter.GetTextureDepthResetValue(segment, _domainModel.SubModels, "rehab", _frameworkModel.Random);
-        }
-
+        
         double textureRaw = segment.TextureMeanLatent;
 
         // If segment has been resurfaced, determine the Texture exceedance and the reset
         bool hasBeenResurfaced = segment.SurfaceAge < surveyAge;
-        if (hasBeenResurfaced)
+        if (hasBeenResurfaced || hasBeenRehabilitated)
         {
-            return Resetter.GetTextureDepthResetValue(segment, _domainModel.SubModels, "resurf", _frameworkModel.Random);
+            double resetValue = Resetter.GetTextureDepthResetValue(segment, _domainModel.SubModels, _frameworkModel.Random);            
+            return resetValue;
         }
 
         // If segment has not been rehabilitated or resurfaced, use the raw Texture value

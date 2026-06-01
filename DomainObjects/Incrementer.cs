@@ -189,9 +189,9 @@ public class Incrementer
         }
         else
         {
-            // Need to draw a new increment for rut and IRI, and reset the episode length
-            segment.TextureIncrement = GetTextureIncrementForEpisode(segment, _domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants);
-
+            // Need to draw a new increment for texture, and reset the episode length
+            segment.TextureIncrement = GetTextureIncrementForEpisode(segment, _domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants);            
+           
             //Reset the episode length to 1
             segment.TextureIncrementEpisodeLength = 1;
         }
