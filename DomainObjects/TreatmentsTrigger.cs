@@ -3,7 +3,7 @@ using JCass_Core.JFunctions;
 using JCass_ModelCore.Models;
 using JCass_ModelCore.Treatments;
 
-namespace MonteCarloRoadModelV1.DomainObjects;
+namespace MonteCarloRoadModelV2.DomainObjects;
 
 /// <summary>
 /// Class for checking treatments triggering 
@@ -11,9 +11,9 @@ namespace MonteCarloRoadModelV1.DomainObjects;
 public class TreatmentsTrigger
 {
     private ModelBase _frameworkModel;
-    private MonteCarloRoadModelV1 _domainModel;
+    private MonteCarloRoadModelV2 _domainModel;
 
-    public TreatmentsTrigger(ModelBase frameworkModel, MonteCarloRoadModelV1 domainModel)
+    public TreatmentsTrigger(ModelBase frameworkModel, MonteCarloRoadModelV2 domainModel)
     {
         _frameworkModel = frameworkModel ?? throw new ArgumentNullException(nameof(frameworkModel), "Domain model cannot be null");
         _domainModel = domainModel ?? throw new ArgumentNullException(nameof(domainModel), "Domain model cannot be null");

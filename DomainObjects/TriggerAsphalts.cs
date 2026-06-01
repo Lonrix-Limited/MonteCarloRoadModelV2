@@ -8,13 +8,13 @@ using JCass_Core.JFunctions;
 using JCass_ModelCore.Models;
 using JCass_ModelCore.Treatments;
 
-namespace MonteCarloRoadModelV1.DomainObjects;
+namespace MonteCarloRoadModelV2.DomainObjects;
 
 public static class TriggerAsphalts
 {
 
     public static List<TreatmentInstance> GetTriggeredAsphaltOrOgpaTreatments(RoadSegmentMC segment, int period,
-        ModelBase frameworkModel, MonteCarloRoadModelV1 domainModel, Dictionary<string, Dictionary<string, object>> lookups,
+        ModelBase frameworkModel, MonteCarloRoadModelV2 domainModel, Dictionary<string, Dictionary<string, object>> lookups,
         Dictionary<string, object> infoFromModel)
     {
         try
@@ -57,7 +57,7 @@ public static class TriggerAsphalts
         }
     }
 
-    private static void AddRehabilitationIfValid(RoadSegmentMC segment, MonteCarloRoadModelV1 domainModel, int iPeriod, List<TreatmentInstance> treatments, 
+    private static void AddRehabilitationIfValid(RoadSegmentMC segment, MonteCarloRoadModelV2 domainModel, int iPeriod, List<TreatmentInstance> treatments, 
         Dictionary<string, Dictionary<string, object>> lookups)
     {
         try
@@ -90,7 +90,7 @@ public static class TriggerAsphalts
         }
     }
 
-    private static void AddHoldingThinACIfValid(RoadSegmentMC segment, ModelBase frameworkModel, MonteCarloRoadModelV1 domainModel, int iPeriod, 
+    private static void AddHoldingThinACIfValid(RoadSegmentMC segment, ModelBase frameworkModel, MonteCarloRoadModelV2 domainModel, int iPeriod, 
                                                 List<TreatmentInstance> treatments, Dictionary<string, Dictionary<string, object>> lookups)
     {
         try
@@ -160,7 +160,7 @@ public static class TriggerAsphalts
         }
     }
 
-    private static void AddPreservationThinACIfValid(RoadSegmentMC segment, MonteCarloRoadModelV1 domainModel, int iPeriod, List<TreatmentInstance> treatments,
+    private static void AddPreservationThinACIfValid(RoadSegmentMC segment, MonteCarloRoadModelV2 domainModel, int iPeriod, List<TreatmentInstance> treatments,
                                                     Dictionary<string, Dictionary<string, object>> lookups)
     {
         try
@@ -199,7 +199,7 @@ public static class TriggerAsphalts
         }
     }
 
-    private static void AddAcHeavyMaintenanceIfValid(RoadSegmentMC segment, int iPeriod, MonteCarloRoadModelV1 domainModel,
+    private static void AddAcHeavyMaintenanceIfValid(RoadSegmentMC segment, int iPeriod, MonteCarloRoadModelV2 domainModel,
                                                      List<TreatmentInstance> treatments, Dictionary<string, object> infoFromModel,
                                                      Dictionary<string, Dictionary<string, object>> lookups)
     {

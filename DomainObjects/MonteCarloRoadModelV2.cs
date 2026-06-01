@@ -6,11 +6,11 @@ using JCass_Data.Utils;
 using JCass_ModelCore.DomainModels;
 using JCass_ModelCore.MonteCarlo;
 using JCass_ModelCore.Treatments;
-using MonteCarloRoadModelV1.Utilities;
+using MonteCarloRoadModelV2.Utilities;
 
-namespace MonteCarloRoadModelV1.DomainObjects;
+namespace MonteCarloRoadModelV2.DomainObjects;
 
-public class MonteCarloRoadModelV1 : DomainModelBase
+public class MonteCarloRoadModelV2 : DomainModelBase
 {
 
     #region Variables and Submodels
@@ -29,7 +29,7 @@ public class MonteCarloRoadModelV1 : DomainModelBase
     
     #endregion
 
-    public MonteCarloRoadModelV1()
+    public MonteCarloRoadModelV2()
     {
         //Nothing to do here. Note that property 'model' mapping to the ModelBase class (i.e. the Framework Model)
         //will be automatically set up right after this default constructor is called.        

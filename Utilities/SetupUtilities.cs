@@ -10,22 +10,22 @@ using JCass_Core.Statistics;
 using JCass_Data.Objects;
 using JCass_Data.Utils;
 using JCass_ModelCore.MonteCarlo;
-using MonteCarloRoadModelV1.DomainObjects;
+using MonteCarloRoadModelV2.DomainObjects;
 
-namespace MonteCarloRoadModelV1.Utilities;
+namespace MonteCarloRoadModelV2.Utilities;
 
 public static class SetupUtilities
 {
 
     /// <summary>
-    /// Helper function to setup the increment residual SD functions for the MonteCarloRoadModelV1 domain model. This reads in the setup codes from a CSV file and 
+    /// Helper function to setup the increment residual SD functions for the MonteCarloRoadModelV2 domain model. This reads in the setup codes from a CSV file and 
     /// creates the PieceWiseLinearModel instances for each of the three parameters (rut, IRI, texture). The setup codes in the
     /// CSV file should be in the format expected by the PieceWiseLinearModel constructor. The created models are then assigned to the domain model instance.
     /// </summary>
     /// <param name="domainModel">Monte Carlo DomainModel</param>
     /// <param name="workFolder">workfolder to find the path to setup CSV files</param>
     /// <exception cref="Exception"></exception>
-    public static void SetupIncrementResidualModels(DomainObjects.MonteCarloRoadModelV1 domainModel, string workFolder)
+    public static void SetupIncrementResidualModels(DomainObjects.MonteCarloRoadModelV2 domainModel, string workFolder)
     {
         string incrementResidualSDSetupFile = System.IO.Path.Combine(workFolder, @"domain_model/inc_resids_plm_setup_codes.csv");
         if (!System.IO.File.Exists(incrementResidualSDSetupFile))
@@ -43,7 +43,7 @@ public static class SetupUtilities
     }
 
     /// <summary>
-    /// Setup helper function to setup the distribution simulators for the MonteCarloRoadModelV1 domain model. This reads in the setup data 
+    /// Setup helper function to setup the distribution simulators for the MonteCarloRoadModelV2 domain model. This reads in the setup data 
     /// from a CSV file and creates DistributionSimulator instances for each of the three parameters (rut, IRI, texture). The created 
     /// simulators are then assigned to the domain model instance.
     /// </summary>
@@ -51,7 +51,7 @@ public static class SetupUtilities
     /// <param name="workFolder">workfolder to find the path to setup CSV files</param>
     /// <param name="random">Random number generator</param>
     /// <exception cref="Exception"></exception>
-    public static void SetupDistributionSimulators(DomainObjects.MonteCarloRoadModelV1 domainModel, string workFolder, Random random)
+    public static void SetupDistributionSimulators(DomainObjects.MonteCarloRoadModelV2 domainModel, string workFolder, Random random)
     {
         //------------------------------------  Set up distribution simulators for increments------------------------------------
 
@@ -95,7 +95,7 @@ public static class SetupUtilities
     }
 
 
-    public static void SetupProbabilityModels(DomainObjects.MonteCarloRoadModelV1 domainModel, string workFolder)
+    public static void SetupProbabilityModels(DomainObjects.MonteCarloRoadModelV2 domainModel, string workFolder)
     {
         //Set up Logistic prediction model for potfill probability for AC OGPA
         string coefsFile = Path.Combine(workFolder, @"domain_model/logistic_potfill_ac_ogpa.csv");
@@ -126,7 +126,7 @@ public static class SetupUtilities
         domainModel.SubModels.MaintPaProbabilityModelAC = new LogisticModel(coefs4);
     }
 
-    public static void SetupResetModels(DomainObjects.MonteCarloRoadModelV1 domainModel, string workFolder)
+    public static void SetupResetModels(DomainObjects.MonteCarloRoadModelV2 domainModel, string workFolder)
     {
         //------------------------------------  Set up distribution simulators for RESETS ------------------------------------
 
@@ -152,7 +152,7 @@ public static class SetupUtilities
 
     }
 
-    public static void SetupReductionDueToPaMaintenanceModels(DomainObjects.MonteCarloRoadModelV1 domainModel, string workFolder, Random random)
+    public static void SetupReductionDueToPaMaintenanceModels(DomainObjects.MonteCarloRoadModelV2 domainModel, string workFolder, Random random)
     {
        
         //-----------------  Set up distribution simulators for REDUCTION in Rut and IRI after PA Maintenance ------------------------------------
@@ -165,7 +165,7 @@ public static class SetupUtilities
 
     }
 
-    public static void SetupTreatmentSuitabilityScoreModels(DomainObjects.MonteCarloRoadModelV1 domainModel)
+    public static void SetupTreatmentSuitabilityScoreModels(DomainObjects.MonteCarloRoadModelV2 domainModel)
     {        
         double excessRutThreshold = domainModel.Constants.TSSExcessRutThresh;
                 

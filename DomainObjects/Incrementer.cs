@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using JCass_ModelCore.Models;
 
-namespace MonteCarloRoadModelV1.DomainObjects;
+namespace MonteCarloRoadModelV2.DomainObjects;
 
 public class Incrementer
 {
 
     private ModelBase _frameworkModel;
-    private MonteCarloRoadModelV1 _domainModel;
+    private MonteCarloRoadModelV2 _domainModel;
 
-    public Incrementer(ModelBase frameworkModel, MonteCarloRoadModelV1 domainModel)
+    public Incrementer(ModelBase frameworkModel, MonteCarloRoadModelV2 domainModel)
     {
         _frameworkModel = frameworkModel ?? throw new ArgumentNullException(nameof(frameworkModel), "Domain model cannot be null");
         _domainModel = domainModel ?? throw new ArgumentNullException(nameof(domainModel), "Domain model cannot be null");

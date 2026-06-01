@@ -7,15 +7,15 @@ using JCass_Economics.Utilities;
 using JCass_ModelCore.Models;
 using JCass_ModelCore.Treatments;
 
-namespace MonteCarloRoadModelV1.DomainObjects;
+namespace MonteCarloRoadModelV2.DomainObjects;
 
 public class Resetter
 {
 
     private ModelBase _frameworkModel;
-    private MonteCarloRoadModelV1 _domainModel;
+    private MonteCarloRoadModelV2 _domainModel;
 
-    public Resetter(ModelBase frameworkModel, MonteCarloRoadModelV1 domainModel)
+    public Resetter(ModelBase frameworkModel, MonteCarloRoadModelV2 domainModel)
     {
         _frameworkModel = frameworkModel ?? throw new ArgumentNullException(nameof(frameworkModel), "Domain model cannot be null");
         _domainModel = domainModel ?? throw new ArgumentNullException(nameof(domainModel), "Domain model cannot be null");

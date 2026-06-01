@@ -1,4 +1,4 @@
-# MonteCarloRoadModelV1
+# MonteCarloRoadModelV2
 
 A custom C# **Domain Model** plugin for the [Juno Cassandra](https://lonrix-limited.github.io/jcass_docs2/) infrastructure deterioration modelling framework. It implements a Monte Carlo road pavement deterioration model for NZTA state highway forecasting (see the `CopyDllToDestination` target in the `.csproj` — the build drops the DLL into an NZTA SH forecasting project's `domain_model` folder).
 
@@ -6,7 +6,7 @@ A custom C# **Domain Model** plugin for the [Juno Cassandra](https://lonrix-limi
 
 Cassandra is a .NET/C# framework for Infrastructure Deterioration Modelling. A project folder contains a `domain_model/` subfolder where the compiled domain-model DLL plus its setup CSVs live. At runtime the Cassandra desktop app loads the DLL, instantiates the `DomainModelBase` subclass, and calls its lifecycle hooks per element (road segment) and per period.
 
-The framework side lives in sibling repos referenced via `ProjectReference` in [MonteCarloRoadModelV1.csproj](MonteCarloRoadModelV1.csproj):
+The framework side lives in sibling repos referenced via `ProjectReference` in [MonteCarloRoadModelV2.csproj](MonteCarloRoadModelV2.csproj):
 - `..\..\cassandra_main\JCass_Core` — core utilities, statistics, piecewise linear models, normal generators
 - `..\..\cassandra_main\JCass_ModelCore` — `DomainModelBase`, `ModelBase`, `TreatmentInstance`, MonteCarlo helpers (`DistributionSimulator`), lookups
 
@@ -14,7 +14,7 @@ Target framework: **net9.0** (nullable + implicit usings enabled).
 
 ## Lifecycle entry points (DomainModelBase overrides)
 
-All framework calls enter through [DomainObjects/MonteCarloRoadModelV1.cs](DomainObjects/MonteCarloRoadModelV1.cs):
+All framework calls enter through [DomainObjects/MonteCarloRoadModelV2.cs](DomainObjects/MonteCarloRoadModelV2.cs):
 
 | Override | When called | Delegates to |
 |---|---|---|
@@ -82,7 +82,7 @@ All draws share the framework-seeded `NormalGenerator` / `model.Random`, so runs
 ## Build and deploy
 
 ```
-dotnet build MonteCarloRoadModelV1.sln
+dotnet build MonteCarloRoadModelV2.sln
 ```
 
 An `AfterTargets="Build"` target in the csproj automatically copies the built DLL to:
@@ -91,7 +91,7 @@ C:\Users\fritz\Juno Services Dropbox\projects\nzta\2026\sh_forecast_model\monte_
 ```
 That destination is the target Cassandra project's `domain_model` folder. If you're not Fritz or don't have that Dropbox path, either edit/remove the target or accept the build-time copy failure.
 
-The project references sibling repos (`..\..\cassandra_main\JCass_Core` and `..\..\cassandra_main\JCass_ModelCore`) by relative path — they must exist on disk alongside this repo (typical layout: `cassandra/cassandra_main/...` and `cassandra/domain_models/MonteCarloRoadModelV1`).
+The project references sibling repos (`..\..\cassandra_main\JCass_Core` and `..\..\cassandra_main\JCass_ModelCore`) by relative path — they must exist on disk alongside this repo (typical layout: `cassandra/cassandra_main/...` and `cassandra/domain_models/MonteCarloRoadModelV2`).
 
 ## Conventions worth knowing
 
@@ -104,7 +104,7 @@ The project references sibling repos (`..\..\cassandra_main\JCass_Core` and `..\
 
 ## File map
 
-- [DomainObjects/MonteCarloRoadModelV1.cs](DomainObjects/MonteCarloRoadModelV1.cs) — `DomainModelBase` subclass, lifecycle entry points
+- [DomainObjects/MonteCarloRoadModelV2.cs](DomainObjects/MonteCarloRoadModelV2.cs) — `DomainModelBase` subclass, lifecycle entry points
 - [DomainObjects/RoadSegmentMC.cs](DomainObjects/RoadSegmentMC.cs) — segment POCO, `par_*` write contract
 - [DomainObjects/RoadSegmentFactoryMC.cs](DomainObjects/RoadSegmentFactoryMC.cs) — `inp_*` read contract
 - [DomainObjects/Initialiser.cs](DomainObjects/Initialiser.cs) — period-0 segment construction with post-survey treatment handling

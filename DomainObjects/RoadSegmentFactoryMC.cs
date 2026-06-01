@@ -3,7 +3,7 @@ using DocumentFormat.OpenXml.EMMA;
 using JCass_Core.Utils;
 using JCass_ModelCore.Models;
 
-namespace MonteCarloRoadModelV1.DomainObjects;
+namespace MonteCarloRoadModelV2.DomainObjects;
 
 public static class RoadSegmentFactoryMC
 {

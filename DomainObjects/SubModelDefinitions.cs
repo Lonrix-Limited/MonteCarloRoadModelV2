@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using JCass_Core.Statistics;
 using JCass_ModelCore.MonteCarlo;
 
-namespace MonteCarloRoadModelV1.DomainObjects;
+namespace MonteCarloRoadModelV2.DomainObjects;
 
 
 /// <summary>

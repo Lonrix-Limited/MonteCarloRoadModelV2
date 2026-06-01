@@ -2,7 +2,7 @@
 using DocumentFormat.OpenXml.Office.CoverPageProps;
 using JCass_ModelCore.Models;
 
-namespace MonteCarloRoadModelV1.DomainObjects;
+namespace MonteCarloRoadModelV2.DomainObjects;
 
 
 /// <summary>

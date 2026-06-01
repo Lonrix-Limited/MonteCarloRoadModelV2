@@ -4,7 +4,7 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using JCass_Core.Statistics;
 using JCass_Economics.Utilities;
 
-namespace MonteCarloRoadModelV1.DomainObjects;
+namespace MonteCarloRoadModelV2.DomainObjects;
 
 /// <summary>
 /// General model constants set up from model Lookup sets.

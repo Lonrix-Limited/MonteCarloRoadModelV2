@@ -7,12 +7,12 @@ using JCass_Core.JFunctions;
 using JCass_ModelCore.DomainModels;
 using JCass_ModelCore.Treatments;
 
-namespace MonteCarloRoadModelV1.DomainObjects;
+namespace MonteCarloRoadModelV2.DomainObjects;
 
 public static class TriggerChipseals
 {
 
-    public static List<TreatmentInstance> GetTriggeredChipsealTreatments(RoadSegmentMC segment, int period, MonteCarloRoadModelV1 domainModel, Dictionary<string, Dictionary<string, object>> lookups)
+    public static List<TreatmentInstance> GetTriggeredChipsealTreatments(RoadSegmentMC segment, int period, MonteCarloRoadModelV2 domainModel, Dictionary<string, Dictionary<string, object>> lookups)
     {
         try
         {
@@ -63,7 +63,7 @@ public static class TriggerChipseals
         }
     }
 
-    private static void AddRehabilitationIfValid(RoadSegmentMC segment, MonteCarloRoadModelV1 domainModel, int iPeriod, List<TreatmentInstance> treatments, 
+    private static void AddRehabilitationIfValid(RoadSegmentMC segment, MonteCarloRoadModelV2 domainModel, int iPeriod, List<TreatmentInstance> treatments, 
                                                  Dictionary<string, Dictionary<string, object>> lookups)
     {
         try
@@ -95,7 +95,7 @@ public static class TriggerChipseals
         }
     }
 
-    private static void AddPresealRepairIfValid(RoadSegmentMC segment, MonteCarloRoadModelV1 domainModel, int iPeriod, List<TreatmentInstance> treatments, 
+    private static void AddPresealRepairIfValid(RoadSegmentMC segment, MonteCarloRoadModelV2 domainModel, int iPeriod, List<TreatmentInstance> treatments, 
                                                 Dictionary<string, Dictionary<string, object>> lookups)
     {
         try
@@ -142,7 +142,7 @@ public static class TriggerChipseals
         }
     }
 
-    private static void AddPreservationChipsealIfValid(RoadSegmentMC segment, MonteCarloRoadModelV1 domainModel, int iPeriod, List<TreatmentInstance> treatments, 
+    private static void AddPreservationChipsealIfValid(RoadSegmentMC segment, MonteCarloRoadModelV2 domainModel, int iPeriod, List<TreatmentInstance> treatments, 
                                                         Dictionary<string, Dictionary<string, object>> lookups)
     {
         try

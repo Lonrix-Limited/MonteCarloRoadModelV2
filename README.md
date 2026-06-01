@@ -1,10 +1,5 @@
 
-# Version Note:
-This is the first version of the model. It was pinned because it was being used in
-production by one client while further refinements on the model were being done. For
-a more up-to-date version, see [MonteCarloRoadModelV2.](https://github.com/Lonrix-Limited/MonteCarloRoadModelV2)
-
-# MonteCarloRoadModelV1
+# MonteCarloRoadModelV2
 
 A stochastic road pavement deterioration **Domain Model** for the
 [Juno Cassandra](https://lonrix-limited.github.io/jcass_docs2/) framework.
@@ -12,7 +7,7 @@ Suited for road network deterioration modelling in general, but developed and
 calibrated using data from New Zealand road networks.
 
 **Open source.** Source lives at
-[github.com/Lonrix-Limited/MonteCarloRoadModelV1](https://github.com/Lonrix-Limited/MonteCarloRoadModelV1).
+[github.com/Lonrix-Limited/MonteCarloRoadModelV2](https://github.com/Lonrix-Limited/MonteCarloRoadModelV2).
 Experienced modellers are welcome to clone, study and modify it for their own
 use in Cassandra — the simulator wiring, lookup-driven thresholds and trigger
 classes are all explicit entry points for customisation.
@@ -115,7 +110,7 @@ startup from the project's `domain_model/` folder.
 
 ## Framework lifecycle hooks
 
-The `MonteCarloRoadModelV1` class subclasses `DomainModelBase` and implements:
+The `MonteCarloRoadModelV2` class subclasses `DomainModelBase` and implements:
 
 - `SetupInstance()` — one-time wire-up of all simulators, residual functions,
   probability models, reset models, reduction models and treatment-suitability curves
@@ -241,6 +236,6 @@ rather than silently substituting a default.
 
 ## Reference
 
-- Source repo — https://github.com/Lonrix-Limited/MonteCarloRoadModelV1
+- Source repo — https://github.com/Lonrix-Limited/MonteCarloRoadModelV2
 - Juno Cassandra docs — https://lonrix-limited.github.io/jcass_docs2/
 - Project folder guide — https://lonrix-limited.github.io/jcass_docs2/guide/guide_project_folder.html
