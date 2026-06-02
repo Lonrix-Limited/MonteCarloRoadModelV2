@@ -393,11 +393,9 @@ public class Constants
 
     // --- Increments ---
 
-    private PieceWiseLinearModel _calFactRutIncrement;
-    private PieceWiseLinearModel _calFactIriIncrement;
-    private PieceWiseLinearModel _calFactTextureIncrement;
-    private double _calMaxRutIncrement;
-    private double _calMaxIriIncrement;
+    private Dictionary<string, double> _incremAdjustmentFactorsIRI;
+    private Dictionary<string, double> _incremAdjustmentFactorsRut;
+    private Dictionary<string, double> _incremAdjustmentFactorsTexture;
 
     // --- Resets ---
 
@@ -521,49 +519,29 @@ public class Constants
 
     // ---- Increment calibration properties ----
 
+
     /// <summary>
-    /// Calibration factor for episodic increment for Rut. Sampled value is multiplied by this factor to reduce or increase.
-    /// Lookup set: cal_increments, key: rut.
+    /// Increment Adjustment factors for IRI deterioration increments based on Surface Class. This value is added to the deterioration increment 
     /// </summary>
-    public PieceWiseLinearModel CalFactRutIncrement
+    public Dictionary<string, double> IncremAdjustmentFactorsIRI
     {
-        get { return _calFactRutIncrement; }
+        get { return _incremAdjustmentFactorsIRI; }
     }
 
     /// <summary>
-    /// Maximum Rut increment allowed for an episode, in mm/year. Set this to a low value to prevent excessively high increments for some episodes. 
-    /// Set this to a very high value to effectively have no maximum.
+    /// increment Adjustment factors for Rut deterioration increments based on Surface Class. This value is added to the deterioration increment 
     /// </summary>
-    public double CalMaxRutIncrement
+    public Dictionary<string, double> IncremAdjustmentFactorsRut
     {
-        get { return _calMaxRutIncrement; }
+        get { return _incremAdjustmentFactorsRut; }
     }
 
     /// <summary>
-    /// Calibration factor for episodic increment for IRI. Sampled value is multiplied by this factor to reduce or increase.
-    /// Lookup set: cal_increments, key: iri.
+    /// Increment Adjustment factors for Texture deterioration increments based on Surface Class. This value is added to the deterioration increment
     /// </summary>
-    public PieceWiseLinearModel CalFactIriIncrement
+    public Dictionary<string, double> IncremAdjustmentFactorsTexture
     {
-        get { return _calFactIriIncrement; }
-    }
-
-    /// <summary>
-    /// Maximum IRI increment allowed for an episode, in mm/m/year. Set this to a low value to prevent excessively high increments for some episodes.
-    /// Set this to a very high value to effectively have no maximum.
-    /// </summary>
-    public double CalMaxIriIncrement
-    {
-        get { return _calMaxIriIncrement; }
-    }
-
-    /// <summary>
-    /// Calibration factor for episodic increment for Texture. Sampled value is multiplied by this factor to reduce or increase.
-    /// Lookup set: cal_increments, key: texture.
-    /// </summary>
-    public PieceWiseLinearModel CalFactTextureIncrement
-    {
-        get { return _calFactTextureIncrement; }
+        get { return _incremAdjustmentFactorsTexture; }
     }
 
     // ---- Reset calibration properties ----
@@ -692,17 +670,23 @@ public class Constants
         _calMinIRIReducPaMaint = Convert.ToDouble(lookupSets["cal_maintenance"]["iri_reduc_min"]);
 
         // Calibration factors - Increments
-        _calFactRutIncrement = new PieceWiseLinearModel(
-            lookupSets["cal_increments"]["rut"].ToString() ?? throw new InvalidDataException("Lookup 'cal_increments.rut' is null"),
-            false);
-        _calFactIriIncrement = new PieceWiseLinearModel(
-            lookupSets["cal_increments"]["iri"].ToString() ?? throw new InvalidDataException("Lookup 'cal_increments.iri' is null"),
-            false);
-        _calFactTextureIncrement = new PieceWiseLinearModel(
-            lookupSets["cal_increments"]["texture"].ToString() ?? throw new InvalidDataException("Lookup 'cal_increments.texture' is null"),
-            false);
-        _calMaxRutIncrement = Convert.ToDouble(lookupSets["cal_increments"]["rut_max"]);
-        _calMaxIriIncrement = Convert.ToDouble(lookupSets["cal_increments"]["iri_max"]);
+        _incremAdjustmentFactorsIRI = new Dictionary<string, double>();
+        foreach (var key in lookupSets["cal_increm_adj_iri"].Keys)
+        {
+            _incremAdjustmentFactorsIRI[key] = Convert.ToDouble(lookupSets["cal_increm_adj_iri"][key]);
+        }
+
+        _incremAdjustmentFactorsRut = new Dictionary<string, double>();
+        foreach (var key in lookupSets["cal_increm_adj_rut"].Keys)
+        {
+            _incremAdjustmentFactorsRut[key] = Convert.ToDouble(lookupSets["cal_increm_adj_rut"][key]);
+        }
+
+        _incremAdjustmentFactorsTexture = new Dictionary<string, double>();
+        foreach (var key in lookupSets["cal_increm_adj_text"].Keys)
+        {
+            _incremAdjustmentFactorsTexture[key] = Convert.ToDouble(lookupSets["cal_increm_adj_text"][key]);
+        }
 
         // Calibration factors - Resets
         _calFactRutReset = Convert.ToDouble(lookupSets["cal_resets"]["rut"]);

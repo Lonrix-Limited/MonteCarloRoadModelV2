@@ -77,7 +77,7 @@ public class Resetter
 
         
         // Texture Depth               
-        newValue = GetTextureDepthResetValue(segment, _domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants, period); //Reset value.
+        newValue = GetTextureDepthResetValue(segment, _domainModel.SubModels, treatment.TreatmentName, _domainModel.Constants, _frameworkModel.Random, period); //Reset value.
         segment.TextureIncrement = Incrementer.GetTextureIncrementForEpisode(segment, _domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants); //Get new increment for new eposode.        
         residual = Incrementer.GetTextureResidual(_domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants, newValue);
         segment.TextureMeanLatent = newValue;
@@ -358,7 +358,7 @@ public class Resetter
     /// <param name="random">Random number generator to use for the simulation</param>
     /// <returns>The simulated Texture Depth  Reset value</returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public static double GetTextureDepthResetValue(RoadSegmentMC segment, SubModelDefinitions subModels, Random random, Constants constants, int period, string treatmentName)
+    public static double GetTextureDepthResetValue(RoadSegmentMC segment, SubModelDefinitions subModels, string treatmentName, Constants constants, Random random, int period)
     {
         var inputParameters = GetInputParametersForSegment(segment);
         double resettedValue = 0;

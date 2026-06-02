@@ -65,7 +65,7 @@ public class Incrementer
         CheckTextureIncrementForEpisode(segment, _domainModel.Constants.MaximumEpisodeLengthTexture);
 
         double newValue = segment.TextureMeanLatent + segment.TextureIncrement;
-        double residual = GetTextureResidual(_domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants, newValue);
+        double residual = GetTextureResidual(_domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants, newValue);        
         segment.TextureMeanLatent = newValue;
         segment.TextureMeanObserved = segment.TextureMeanLatent + residual;
 
@@ -225,17 +225,23 @@ public class Incrementer
     public static double GetRutIncrementForEpisode(RoadSegmentMC segment, SubModelDefinitions subModels, Random random, Constants constants)
     {        
         double sampledValue = subModels.RutIncrementSimulator.GetSimulatedValue(GetSimulatorInputValues(segment), random);
-        double calibrationFactor = constants.CalFactRutIncrement.GetValue(sampledValue);
-        if (sampledValue > constants.CalMaxRutIncrement) sampledValue = constants.CalMaxRutIncrement;
-        return calibrationFactor * sampledValue;
+        double adjustment = 0.0;
+        if (constants.IncremAdjustmentFactorsRut.ContainsKey(segment.SurfaceClass))
+        {
+            adjustment = constants.IncremAdjustmentFactorsRut[segment.SurfaceClass];
+        }               
+        return sampledValue + adjustment;
     }
 
     public static double GetIRIIncrementForEpisode(RoadSegmentMC segment, SubModelDefinitions subModels, Random random, Constants constants)
     {        
         double sampledValue = subModels.IRIIncrementSimulator.GetSimulatedValue(GetSimulatorInputValues(segment), random);
-        double calibrationFactor = constants.CalFactIriIncrement.GetValue(sampledValue);
-        if (sampledValue > constants.CalMaxIriIncrement) sampledValue = constants.CalMaxIriIncrement;
-        return calibrationFactor * sampledValue;
+        double adjustment = 0.0;
+        if (constants.IncremAdjustmentFactorsIRI.ContainsKey(segment.SurfaceClass))
+        {
+            adjustment = constants.IncremAdjustmentFactorsIRI[segment.SurfaceClass];
+        }
+        return sampledValue + adjustment;
     }
 
     public static double GetTextureIncrementForEpisode(RoadSegmentMC segment, SubModelDefinitions subModels, Random random, Constants constants)
@@ -247,8 +253,12 @@ public class Incrementer
         }
 
         double sampledValue = subModels.TextureIncrementSimulator.GetSimulatedValue(GetSimulatorInputValues(segment), random);
-        double calibrationFactor = constants.CalFactTextureIncrement.GetValue(sampledValue);
-        return calibrationFactor * sampledValue;
+        double adjustment = 0.0;
+        if (constants.IncremAdjustmentFactorsTexture.ContainsKey(segment.SurfaceClass))
+        {
+            adjustment = constants.IncremAdjustmentFactorsTexture[segment.SurfaceClass];
+        }
+        return sampledValue + adjustment;
     }
 
     private static Dictionary<string, object> GetSimulatorInputValues(RoadSegmentMC segment)

@@ -270,19 +270,25 @@ public class Initialiser
 
         double surveyAge = GetHSDSurveyAge(segment);
 
-        // If segment has been resurfaced or rehabilitated, return the lookup value for the Texture reset
+        // If segment has been rehabilitated, return the lookup value for the IRI reset
         bool hasBeenRehabilitated = segment.PavementAge < surveyAge;
-        
-        double textureRaw = segment.TextureMeanLatent;
-
-        // If segment has been resurfaced, determine the Texture exceedance and the reset
-        bool hasBeenResurfaced = segment.SurfaceAge < surveyAge;
-        if (hasBeenResurfaced || hasBeenRehabilitated)
+        if (hasBeenRehabilitated)
         {
-            double resetValue = Resetter.GetTextureDepthResetValue(segment, _domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants, 0);            
-            return resetValue;
+            // Estimate the treatment name based on material type            
+            string treatmentName = segment.SurfaceClass + "_rehab";
+            return Resetter.GetTextureDepthResetValue(segment, _domainModel.SubModels, treatmentName, _domainModel.Constants, _frameworkModel.Random, 0);
         }
 
+        // If segment has been resurfaced, determine the IRI exceedance and the reset
+        bool hasBeenResurfaced = segment.SurfaceAge < surveyAge;
+        if (hasBeenResurfaced)
+        {
+            // Estimate the treatment name based on material type
+            string treatmentName = segment.SurfaceClass + "_resurf";
+            return Resetter.GetTextureDepthResetValue(segment, _domainModel.SubModels, treatmentName, _domainModel.Constants, _frameworkModel.Random, 0);
+        }
+        
+        double textureRaw = segment.TextureMeanLatent;
         // If segment has not been rehabilitated or resurfaced, use the raw Texture value
         return textureRaw;
     }
