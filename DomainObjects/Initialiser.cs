@@ -279,7 +279,7 @@ public class Initialiser
         bool hasBeenResurfaced = segment.SurfaceAge < surveyAge;
         if (hasBeenResurfaced || hasBeenRehabilitated)
         {
-            double resetValue = Resetter.GetTextureDepthResetValue(segment, _domainModel.SubModels, _frameworkModel.Random);            
+            double resetValue = Resetter.GetTextureDepthResetValue(segment, _domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants, 0);            
             return resetValue;
         }
 

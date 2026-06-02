@@ -164,7 +164,7 @@ surface):
 - **Chipseal next-surface** (`cs`) →
   [TriggerChipseals.cs](DomainObjects/TriggerChipseals.cs) emits: **Second-coat**
   (forced, `cs_2nd_coat_r` or `cs_2nd_coat_h`, when `SecondCoatNeeded` and
-  `SLA >= 100`); otherwise **Preservation chipseal** (`cs_preserve`),
+  `SLA >= 100`); otherwise **Preservation chipseal** (`cs_resurf`),
   **Preseal repair** (`cs_preseal`, sized to the in-distress area fraction
   `PDI/100`), and **Rehabilitation** (`cs_rehab`).
 - **Blocks / concrete / other** → birthday treatment (`blocks`, `concrete`,

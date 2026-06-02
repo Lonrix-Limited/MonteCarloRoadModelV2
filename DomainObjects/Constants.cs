@@ -407,6 +407,7 @@ public class Constants
 
     private Dictionary<string, double> _resetAdjustmentFactorsIRI;
     private Dictionary<string, double> _resetAdjustmentFactorsRut;
+    private Dictionary<string, double> _resetAdjustmentFactorsTexture;
 
 
     // ---- Residual calibration properties ----
@@ -611,6 +612,15 @@ public class Constants
     {
         get { return _resetAdjustmentFactorsRut; }
     }
+    
+    /// <summary>
+    /// Adjustment factors for Texture resets based on Treatment Type. This value is added to the reset value after multiplying by the CalFactTextureReset factor.
+    /// Lookup set: cal_reset_adj_text, key: with sub-keys for each treatment type.
+    /// </summary>
+    public Dictionary<string, double> ResetAdjustmentFactorsTexture
+    {
+        get { return _resetAdjustmentFactorsTexture; }
+    }
 
     #endregion
 
@@ -709,6 +719,12 @@ public class Constants
         foreach (var key in lookupSets["cal_reset_adj_rut"].Keys)
         {
             _resetAdjustmentFactorsRut[key] = Convert.ToDouble(lookupSets["cal_reset_adj_rut"][key]);
+        }
+
+        _resetAdjustmentFactorsTexture = new Dictionary<string, double>();
+        foreach (var key in lookupSets["cal_reset_adj_text"].Keys)
+        {
+            _resetAdjustmentFactorsTexture[key] = Convert.ToDouble(lookupSets["cal_reset_adj_text"][key]);
         }
 
     }

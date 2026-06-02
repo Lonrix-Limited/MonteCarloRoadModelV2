@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using JCass_Economics.Utilities;
 using JCass_ModelCore.Models;
 using JCass_ModelCore.Treatments;
@@ -76,7 +77,7 @@ public class Resetter
 
         
         // Texture Depth               
-        newValue = GetTextureDepthResetValue(segment, _domainModel.SubModels, _frameworkModel.Random); //Reset value.
+        newValue = GetTextureDepthResetValue(segment, _domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants, period); //Reset value.
         segment.TextureIncrement = Incrementer.GetTextureIncrementForEpisode(segment, _domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants); //Get new increment for new eposode.        
         residual = Incrementer.GetTextureResidual(_domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants, newValue);
         segment.TextureMeanLatent = newValue;
@@ -357,11 +358,42 @@ public class Resetter
     /// <param name="random">Random number generator to use for the simulation</param>
     /// <returns>The simulated Texture Depth  Reset value</returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public static double GetTextureDepthResetValue(RoadSegmentMC segment, SubModelDefinitions subModels, Random random)
+    public static double GetTextureDepthResetValue(RoadSegmentMC segment, SubModelDefinitions subModels, Random random, Constants constants, int period, string treatmentName)
     {
-        var inputParameters = GetInputParametersForSegment(segment);        
-        double resetValue = subModels.TextureResetSimulator.GetSimulatedValue(inputParameters, random); //Texture reset does not vary by treatment class, so we can use the same model for all segments regardless of treatment.                
-        return resetValue;
+        var inputParameters = GetInputParametersForSegment(segment);
+        double resettedValue = 0;
+
+        // Get the treatment specific calibration adjustment factor.
+        double adjustment = 0;
+        if (constants.ResetAdjustmentFactorsTexture.ContainsKey(treatmentName))
+        {
+            adjustment = constants.ResetAdjustmentFactorsTexture[treatmentName];
+        }
+
+
+        if (period <= constants.MinimiseStochasticEffectsPeriod)
+        {
+            // Take the average of multiple draws to reduce stochasticity in the early periods after treatment, which can have a big impact on
+            // model outputs and make it more difficult to identify the underlying drivers of model results.
+            double meanReset = 0;
+            int nDraws = 5;
+            for (int i = 0; i < nDraws; i++)
+            {
+                meanReset += subModels.TextureResetSimulator.GetSimulatedValue(inputParameters, random);
+            }
+            resettedValue = meanReset / nDraws;
+        }
+        else
+        {
+            //Texture reset does not vary by treatment class, so we can use the same model for all segments regardless of treatment.                
+            resettedValue = subModels.TextureResetSimulator.GetSimulatedValue(inputParameters, random); 
+        }
+
+        resettedValue = resettedValue + adjustment; // Apply the treatment specific adjustment to the reset value
+
+        // Apply the overall calibration factor to the reset value after applying the treatment specific adjustment
+        double calibrationFactor = constants.CalFactTextureReset;
+        return resettedValue * calibrationFactor;
     }
 
     #endregion

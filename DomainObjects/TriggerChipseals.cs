@@ -147,7 +147,7 @@ public static class TriggerChipseals
     {
         try
         {
-            string treatmentName = "cs_preserve";
+            string treatmentName = "cs_resurf";
 
             // For preservation, if PDI is above the maximum threshold, do not add a treatment
             if (segment.PavementDistressIndex > domainModel.Constants.MaxPDIForChipsealResurfacing) return;
