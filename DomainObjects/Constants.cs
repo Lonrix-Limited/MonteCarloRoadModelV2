@@ -383,8 +383,10 @@ public class Constants
     // --- Maintenance ---
 
     private double _calFactPaProba;
+    private double _calFactSuProba;
     private double _calFactPotfillProba;
     private double _calFactPaExtent;
+    private double _calFactSuExtent;
     private double _calFactPotfillExtent;
     private double _calFactRutReduc;
     private double _calFactIriReduc;
@@ -449,6 +451,15 @@ public class Constants
     }
 
     /// <summary>
+    /// Calibration factor for probability of SU maintenance (excluding Pothole filling). Decreasing this decreases probability of SU maintenance.
+    /// Lookup set: cal_maintenance, key: su_proba.
+    /// </summary>
+    public double CalFactSuMaintenanceProbability
+    {
+        get { return _calFactSuProba; }
+    }
+
+    /// <summary>
     /// Calibration factor for probability of Pothole Filling maintenance. Decreasing this decreases probability of Pothole Filling.
     /// Lookup set: cal_maintenance, key: potfill_proba.
     /// </summary>
@@ -464,6 +475,15 @@ public class Constants
     public double CalFactPaMaintenanceExtent
     {
         get { return _calFactPaExtent; }
+    }
+
+    /// <summary>
+    /// Calibration factor for extent of PA Maintenance. Sampled extent is multiplied by this factor to reduce or increase.
+    /// Lookup set: cal_maintenance, key: su_extent.
+    /// </summary>
+    public double CalFactSuMaintenanceExtent
+    {
+        get { return _calFactSuExtent; }
     }
 
     /// <summary>
@@ -661,8 +681,10 @@ public class Constants
 
         // Calibration factors - Maintenance
         _calFactPaProba = Convert.ToDouble(lookupSets["cal_maintenance"]["pa_proba"]);
+        _calFactSuProba = Convert.ToDouble(lookupSets["cal_maintenance"]["su_proba"]);
         _calFactPotfillProba = Convert.ToDouble(lookupSets["cal_maintenance"]["potfill_proba"]);
         _calFactPaExtent = Convert.ToDouble(lookupSets["cal_maintenance"]["pa_extent"]);
+        _calFactSuExtent = Convert.ToDouble(lookupSets["cal_maintenance"]["su_extent"]);
         _calFactPotfillExtent = Convert.ToDouble(lookupSets["cal_maintenance"]["potfill_extent"]);
         _calFactRutReduc = Convert.ToDouble(lookupSets["cal_maintenance"]["rut_reduc"]);
         _calFactIriReduc = Convert.ToDouble(lookupSets["cal_maintenance"]["iri_reduc"]);

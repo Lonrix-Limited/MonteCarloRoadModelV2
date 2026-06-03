@@ -77,10 +77,12 @@ public static class RoadSegmentFactoryMC
 
         // Routine Maintenance 
         segment.MaintenancePavement = model.GetInputDataNumber(segment.ElementIndex, "inp_maint_pa_ext");
+        segment.MaintenanceSurfacing = model.GetInputDataNumber(segment.ElementIndex, "inp_maint_su_ext");
         segment.MaintenancePotfill = model.GetInputDataNumber(segment.ElementIndex, "inp_maint_poth_ext");
         segment.MaintenanceFreqHistoricalPA = model.GetInputDataNumber(segment.ElementIndex, "inp_maint_pa_rept_ext");
         segment.MaintenanceFreqHistoricalPoth = model.GetInputDataNumber(segment.ElementIndex, "inp_maint_poth_rept_ext");
-        
+        segment.MaintenanceFreqHistoricalSU = model.GetInputDataNumber(segment.ElementIndex, "inp_maint_su_rept_ext");
+
         // Treatment Triggering Flags
         segment.CanTreatFlag = Convert.ToInt32(model.GetInputDataNumber(segment.ElementIndex, "inp_can_treat_flag"));        
         segment.CanDoThinACOverlay = Convert.ToInt32(model.GetInputDataNumber(segment.ElementIndex, "inp_thin_ac_ok_flag"));
@@ -163,6 +165,7 @@ public static class RoadSegmentFactoryMC
 
         // Routine Maintenance
         segment.MaintenancePavement = numParamValues["par_maint_pa"]; // Updated maintenance extent for pavement
+        segment.MaintenanceSurfacing = numParamValues["par_maint_su"]; // Updated maintenance extent for surfacing
         segment.MaintenancePotfill = numParamValues["par_maint_poth"]; // Updated maintenance extent for pothole filling
 
         // Candidate Selection from last period

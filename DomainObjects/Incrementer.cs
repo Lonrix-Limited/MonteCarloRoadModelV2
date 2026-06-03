@@ -271,6 +271,7 @@ public class Incrementer
             { "surf_age", segment.SurfaceAge },
             { "pre_potfill_mtc_extent", segment.MaintenancePotfill },
             { "pre_all_mtc_extent", segment.MaintenancePavement },
+            { "pre_surf_mtc_extent", segment.MaintenanceSurfacing },
             { "adt", segment.AverageDailyTraffic },
             { "heavy_perc", segment.HeavyVehiclePercentage },
             { "surf_thick", segment.SurfaceThickness },

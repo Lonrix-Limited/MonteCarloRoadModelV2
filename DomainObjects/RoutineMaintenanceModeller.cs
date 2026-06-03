@@ -29,9 +29,9 @@ public class RoutineMaintenanceModeller
         double calibrationFactor = _domainModel.Constants.CalFactPaMaintenanceProbability;
 
         // Deal first with PA maintenance (excluding potfill) 
-        double probabilityOfMaintenance = calibrationFactor * GetMaintenanceProbabilityPA(segment);
+        double probabilityOfPAMaintenance = calibrationFactor * GetMaintenanceProbabilityPA(segment);
         double randomValue = _frameworkModel.Random.NextDouble();
-        if (randomValue < probabilityOfMaintenance)
+        if (randomValue < probabilityOfPAMaintenance)
         {
             segment.MaintenancePavement = _domainModel.Constants.CalFactPaMaintenanceExtent * GetMaintenanceExtentPA(segment);
         }
@@ -40,10 +40,22 @@ public class RoutineMaintenanceModeller
             segment.MaintenancePavement = 0;
         }
 
-        // Now deal with potfill maintenance
-        probabilityOfMaintenance = _domainModel.Constants.CalFactPotfillProbability * GetMaintenanceProbabilityPotFill(segment);
+        // Deal next with SU maintenance (excluding potfill) 
+        double probabilityOfSUMaintenance = calibrationFactor * GetMaintenanceProbabilitySU(segment);
         randomValue = _frameworkModel.Random.NextDouble();
-        if (randomValue < probabilityOfMaintenance)
+        if (randomValue < probabilityOfSUMaintenance)
+        {
+            segment.MaintenanceSurfacing = _domainModel.Constants.CalFactSuMaintenanceExtent * GetMaintenanceExtentSU(segment);
+        }
+        else
+        {
+            segment.MaintenanceSurfacing = 0;
+        }
+
+        // Now deal with potfill maintenance
+        double probabilityOfPotfillMaintenance = _domainModel.Constants.CalFactPotfillProbability * GetMaintenanceProbabilityPotFill(segment);
+        randomValue = _frameworkModel.Random.NextDouble();
+        if (randomValue < probabilityOfPotfillMaintenance)
         {
             segment.MaintenancePotfill = _domainModel.Constants.CalFactPotfillMaintenanceExtent * GetMaintenanceExtentPotfill(segment);
         }
@@ -115,6 +127,7 @@ public class RoutineMaintenanceModeller
             { "surf_age", segment.SurfaceAge },
             { "pre_potfill_mtc_extent", segment.MaintenancePotfill },
             { "pre_all_mtc_extent", segment.MaintenancePavement },
+            { "pre_surf_mtc_extent", segment.MaintenanceSurfacing },
             { "log(adt)", Math.Log(segment.AverageDailyTraffic) },
             { "heavy_perc", segment.HeavyVehiclePercentage }            
         };
@@ -135,6 +148,49 @@ public class RoutineMaintenanceModeller
         {
             //For unknown, return value for CS and Slurry as a best-guess
             return _domainModel.SubModels.MaintPaProbabilityModelCS.PredictProbability(inputParameters);
+        }
+        else
+        {
+            throw new InvalidOperationException($"Unknown surface class: {segment.SurfaceClass}");
+        }
+    }
+
+    /// <summary>
+    /// Gets the probability of SU maintenance (excluding potfill) for the given road segment based on the appropriate model for the surface class.
+    /// </summary>
+    /// <param name="segment"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    private double GetMaintenanceProbabilitySU(RoadSegmentMC segment)
+    {
+        Dictionary<string, double> inputParameters = new Dictionary<string, double>
+        {
+            { "rut_mean_pre", segment.RutMeanLatent },
+            { "iri_mean_pre", segment.IRIMeanLatent },
+            { "surf_age", segment.SurfaceAge },
+            { "pre_potfill_mtc_extent", segment.MaintenancePotfill },
+            { "pre_all_mtc_extent", segment.MaintenancePavement },
+            { "pre_surf_mtc_extent", segment.MaintenanceSurfacing },
+            { "log(adt)", Math.Log(segment.AverageDailyTraffic) },
+            { "heavy_perc", segment.HeavyVehiclePercentage }
+        };
+
+        if (segment.SurfaceClass == "cs" || segment.SurfaceClass == "slurry")
+        {
+            return _domainModel.SubModels.MaintSuProbabilityModelCS.PredictProbability(inputParameters);
+        }
+        else if (segment.SurfaceClass == "ac" || segment.SurfaceClass == "ogpa")
+        {
+            return _domainModel.SubModels.MaintSuProbabilityModelAC.PredictProbability(inputParameters);
+        }
+        if (segment.SurfaceClass == "concrete")
+        {
+            return 0.0;   //Not enough data. TODO: explore potfill model for concrete
+        }
+        if (segment.SurfaceClass == "unknown")
+        {
+            //For unknown, return value for CS and Slurry as a best-guess
+            return _domainModel.SubModels.MaintSuProbabilityModelCS.PredictProbability(inputParameters);
         }
         else
         {
@@ -193,6 +249,31 @@ public class RoutineMaintenanceModeller
     /// <exception cref="InvalidOperationException"></exception>
     private double GetMaintenanceExtentPA(RoadSegmentMC segment)
     {        
+        Dictionary<string, object> inputParameters = new Dictionary<string, object>
+        {
+            { "rut_mean_pre", segment.RutMeanLatent },
+            { "iri_mean_pre", segment.IRIMeanLatent },
+            { "surf_age", segment.SurfaceAge },
+            { "pre_potfill_mtc_extent", segment.MaintenancePotfill },
+            { "pre_all_mtc_extent", segment.MaintenancePavement },
+            { "adt", segment.AverageDailyTraffic },
+            { "heavy_perc", segment.HeavyVehiclePercentage },
+            { "surf_thick", segment.SurfaceThickness },
+            { "surf_class", segment.SurfaceClassForRules }
+        };
+
+        return _domainModel.SubModels.MaintenanceExtentPA.GetSimulatedValue(inputParameters, _frameworkModel.Random);
+
+    }
+
+    /// <summary>
+    /// Gets a simulated maintenance extent for SU maintenance (excluding potfill) for the given road segment based on the appropriate model for the surface class.
+    /// </summary>
+    /// <param name="segment"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    private double GetMaintenanceExtentSU(RoadSegmentMC segment)
+    {
         Dictionary<string, object> inputParameters = new Dictionary<string, object>
         {
             { "rut_mean_pre", segment.RutMeanLatent },

@@ -116,11 +116,32 @@ public class SubModelDefinitions
     /// </summary>
     public DistributionSimulator MaintenanceExtentPotfill { get; set; } = null!;
 
-    
+
+    /// <summary>
+    /// Model to predict the probability of Surfacing (SU) Maintenance occurring in the next period for AC surfacings. Coefficients are 
+    /// read at startup from CSV file exported with R script. This CSV should have columns 'term' and 'estimate' where 
+    /// 'term' is the name of the coefficient (e.g. '(Intercept)', 'IRI', 'Rut', etc) and 'estimate' is the value of the coefficient. 
+    /// </summary>
+    public JCass_Core.Statistics.LogisticModel MaintSuProbabilityModelAC { get; set; } = null!;
+
+
+    /// <summary>
+    /// Model to predict the probability of Surfacing (SU) Maintenance occurring in the next period for CS surfacings. Coefficients are 
+    /// read at startup from CSV file exported with R script. This CSV should have columns 'term' and 'estimate' where 
+    /// 'term' is the name of the coefficient (e.g. '(Intercept)', 'IRI', 'Rut', etc) and 'estimate' is the value of the coefficient. 
+    /// </summary>
+    public JCass_Core.Statistics.LogisticModel MaintSuProbabilityModelCS { get; set; } = null!;
+
+
+    /// <summary>
+    /// Simulator for assigning a random Extent of SU maintenance (excluding Pothole filling) when it is triggered
+    /// </summary>
+    public DistributionSimulator MaintenanceExtentSU { get; set; } = null!;
+
     #endregion
 
     #region Reset Simulators
-    
+
     /// <summary>
     /// Simulator for Rut Depth Reset (value after treatment) for Resurfacings
     /// </summary>

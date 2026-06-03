@@ -124,6 +124,23 @@ public static class SetupUtilities
         jcDataSet d4 = CSVHelper.ReadDataFromCsvFile(coefsFile);
         Dictionary<string, double> coefs4 = GetLogisticModelCoefficients(d4);
         domainModel.SubModels.MaintPaProbabilityModelAC = new LogisticModel(coefs4);
+
+
+        //Set up Logistic prediction model for maintenance SU probability for CS slurry
+        coefsFile = Path.Combine(workFolder, @"domain_model/logistic_su_maint_cs_slurry.csv");
+        if (!File.Exists(coefsFile)) throw new Exception($"Coefficient file for Logistic model not found at: {Path.GetFileName(coefsFile)}");
+        jcDataSet d5 = CSVHelper.ReadDataFromCsvFile(coefsFile);
+        Dictionary<string, double> coefs5 = GetLogisticModelCoefficients(d5);
+        domainModel.SubModels.MaintSuProbabilityModelCS = new LogisticModel(coefs5);
+
+        //Set up Logistic prediction model for maintenance SU probability for AC OGPA
+        coefsFile = Path.Combine(workFolder, @"domain_model/logistic_su_maint_ac_ogpa.csv");
+        if (!File.Exists(coefsFile)) throw new Exception($"Coefficient file for Logistic model not found at: {Path.GetFileName(coefsFile)}");
+        jcDataSet d6 = CSVHelper.ReadDataFromCsvFile(coefsFile);
+        Dictionary<string, double> coefs6 = GetLogisticModelCoefficients(d6);
+        domainModel.SubModels.MaintSuProbabilityModelAC = new LogisticModel(coefs6);
+
+
     }
 
     public static void SetupResetModels(DomainObjects.MonteCarloRoadModelV2 domainModel, string workFolder)

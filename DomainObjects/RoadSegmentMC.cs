@@ -432,6 +432,11 @@ public class RoadSegmentMC
     public double MaintenancePavement { get; set; }
 
     /// <summary>
+    /// Extent of Surfacing-related Routine Maintenance (excluding Pothole Filling), as fraction of total length (value 0 to 1), triggered in the period. 
+    /// </summary>
+    public double MaintenanceSurfacing { get; set; }
+
+    /// <summary>
     /// Extent of Pothole Filling Routine Maintenance, as fraction of total length (value 0 to 1), triggered in the period. 
     /// </summary>
     public double MaintenancePotfill { get; set; }
@@ -441,6 +446,12 @@ public class RoadSegmentMC
     /// PA maintenance actions in the last 3 years. 
     /// </summary>
     public double MaintenanceFreqHistoricalPA { get; set; }
+
+    /// <summary>
+    /// Historical maintenance extent - calculated in Casper as the extent of the segment that has seen 2 or more
+    /// SU maintenance actions in the last 3 years. 
+    /// </summary>
+    public double MaintenanceFreqHistoricalSU { get; set; }
 
     /// <summary>
     /// Historical maintenance extent - calculated in Casper as the extent of the segment that has seen 2 or more
@@ -703,6 +714,7 @@ public class RoadSegmentMC
         numModParamValues("par_sni", this.GetSurfaceTreatmentNeedsIndex(constants, period));
 
         numModParamValues("par_maint_pa", this.MaintenancePavement);
+        numModParamValues("par_maint_su", this.MaintenanceSurfacing);
         numModParamValues("par_maint_poth", this.MaintenancePotfill);
 
         int periodsToNextTreatment = Convert.ToInt32(infoFromModel["periods_to_next_treatment"]);
