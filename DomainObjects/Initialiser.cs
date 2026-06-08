@@ -49,6 +49,8 @@ public class Initialiser
         segment.PavementDistressIndex = GetInitialPDIValue(segment);
         segment.SurfaceDistressIndex = GetInitialSDIValue(segment);
 
+        segment.NumberOfTreatments = 0; // Initialise treatment count;
+
         return segment;
     }
         

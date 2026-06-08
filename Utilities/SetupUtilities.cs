@@ -58,10 +58,10 @@ public static class SetupUtilities
         string distributionSetupFile = System.IO.Path.Combine(workFolder, @"domain_model/cohorts_b_increments_6yrs_rut_mean_rate.csv");       
         domainModel.SubModels.RutIncrementSimulator = SetupUtilities.GetDistributionSimulator("rut_inc", distributionSetupFile, "Rut Increment");
 
-        distributionSetupFile = System.IO.Path.Combine(workFolder, @"domain_model/cohorts_b_increments_6yrs_iri_mean_rate.csv");
+        distributionSetupFile = System.IO.Path.Combine(workFolder, @"domain_model/cohorts_b_increments_6yrs_iri_mean_rate_v2.csv");        
         domainModel.SubModels.IRIIncrementSimulator = SetupUtilities.GetDistributionSimulator("iri_inc", distributionSetupFile, "IRI Increment");
 
-        distributionSetupFile = System.IO.Path.Combine(workFolder, @"domain_model/cohorts_b_increments_3yrs_text_mean_rate.csv");
+        distributionSetupFile = System.IO.Path.Combine(workFolder, @"domain_model/cohorts_b_increments_1yrs_text_mean_rate.csv");
         domainModel.SubModels.TextureIncrementSimulator = SetupUtilities.GetDistributionSimulator("text_inc", distributionSetupFile, "Texture Increment");
         
 

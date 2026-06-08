@@ -129,7 +129,10 @@ public static class TriggerAsphalts
             double acRepairUnitRate = Convert.ToDouble(unitRateSet[hmaintCode]);
 
             double overlayCost = overlayQuantity * acOverlayUnitRate;
-            double repairCost = repairQuantity * acRepairUnitRate;
+
+            // Add a small fraction to the repair cost to ensure that the treatment is not considered as a pure overlay in the budgeting, but
+            // rather as a combination of overlay and repair. Otherwise holding actions will sneak through even if the holding budget is zero
+            double repairCost = repairQuantity * acRepairUnitRate + 1;
 
             double totalCost = overlayCost + repairCost;
 

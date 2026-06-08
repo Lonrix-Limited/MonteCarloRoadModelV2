@@ -29,7 +29,8 @@ public class Constants
 
     // Related to Rehabilitation Needs Index and TSS
     private int _histMaintUsePeriods;
-    private double _excessRutThreshold;    
+    private double _excessRutThreshold;
+    private double _excessIRIThreshold;
     private double _rehabMinRniRank;
     private double _holdingRniRankPt1;
     private double _holdingRniRankPt2;
@@ -286,10 +287,18 @@ public class Constants
             return 0;  // For other surface classes, do not apply a minimum PDI threshold for rehab since a birthday treatment concept applies
         }
     }
-    
 
     /// <summary>
-    /// Rut threshold above which a penalty(for Preservation/Holding Actions) or Boost(for Rehabs) is applied
+    /// IRI threshold above which a penalty(for Preservation) or Boost(for Rehabs/Holding Action) is applied
+    /// </summary>
+    public double TSSExcessIRIThresh
+    {
+        get { return _excessIRIThreshold; }
+    }
+
+
+    /// <summary>
+    /// Rut threshold above which a penalty(for Preservation) or Boost(for Rehabs/Holding Actions) is applied
     /// </summary>
     public double TSSExcessRutThresh
     {
@@ -645,6 +654,7 @@ public class Constants
         _minPdiForRehabCS = Convert.ToDouble(lookupSets["rehab_needs_index"]["min_pdi_for_rehab_cs"]);
         _minPdiForRehabOGPA = Convert.ToDouble(lookupSets["rehab_needs_index"]["min_pdi_for_rehab_ogpa"]);
         _excessRutThreshold = Convert.ToDouble(lookupSets["rehab_needs_index"]["excess_rut_threshold"]);
+        _excessIRIThreshold = Convert.ToDouble(lookupSets["rehab_needs_index"]["excess_iri_threshold"]);
 
         // Surfacing Needs Index related constants (some of these also influence TSS)
         _csMaxSealCount = Convert.ToInt32(lookupSets["surfacing_needs_index"]["cs_max_seal_count"]);

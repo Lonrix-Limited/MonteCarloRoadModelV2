@@ -171,6 +171,8 @@ public static class RoadSegmentFactoryMC
         // Candidate Selection from last period
         segment.CandidateSelectionOutcome = textParamValues["par_trigg_info"];
 
+        segment.NumberOfTreatments = numParamValues["par_treat_count"]; 
+
 
         // Ensure that the method to re-calculate index values is called after return
 

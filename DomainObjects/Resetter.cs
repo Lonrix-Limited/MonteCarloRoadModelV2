@@ -32,6 +32,7 @@ public class Resetter
             _ = 0; // breakpoint anchor — set/remove IDE breakpoint here at runtime
         }
 
+        segment.NumberOfTreatments += 1;   //Increment the number of treatments for the segment
 
         bool isRehabTreatment = treatment.TreatmentName.ToLower().Contains("rehab");
         string treatmentTypeCode = isRehabTreatment ? "rehab" : "resurf";
@@ -89,8 +90,11 @@ public class Resetter
         ResetSurfacingDistressIndex(segment, _domainModel.SubModels, treatment.TreatmentName, _domainModel.Constants, _frameworkModel.Random);
 
 
-        // Maintenance
-        _domainModel.MaintenanceModel.UpdateRoutineMaintenanceExtents(segment);
+        // Maintenance is set to Zero in the treatment period. This ensures that the influence of past maintenance
+        // (which is a huge risk factor in the logistic regression models for maintenance probability) is removed in the
+        // period when treatment is applied
+        _domainModel.MaintenanceModel.ResetRoutineMaintenanceExtents(segment);
+
 
         return segment;
     }

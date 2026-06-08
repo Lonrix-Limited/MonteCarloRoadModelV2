@@ -483,7 +483,7 @@ public class RoadSegmentMC
     /// Pavement Distress Index initialised from 'inp_pdi'
     /// </summary>
     public double PavementDistressIndex { get; set; } = 0;
-
+    
 
     /// <summary>
     /// Percentage rank of the Pavement Distress Index value for the segment compared to all other segments in the model. This is
@@ -499,7 +499,7 @@ public class RoadSegmentMC
     /// Surfacing Distress Index initialised from 'inp_sdi'
     /// </summary>
     public double SurfaceDistressIndex { get; set; } = 0;
-
+    
     /// <summary>
     /// Percentage rank of the Surface Distress Index value for the segment compared to all other segments in the model.
     /// This is used for treatment triggers and prioritisation, to allow to compare the SDI value of a segment with the
@@ -520,6 +520,11 @@ public class RoadSegmentMC
     #region Treatment Trigger Related
 
     /// <summary>
+    /// Number of treatments triggered on the segment during the model run - committed or triggered
+    /// </summary>
+    public double NumberOfTreatments { get; set; } = 0;
+
+    /// <summary>
     /// Candidate Selection Outcome calculated at the end of the epoch based on the segment properties and condition, and 
     /// used in the next period to determine if the segment is a candidate for treatment. If value is 'ok' it means the
     /// segment can be considered for treatment. Otherwise, the flag should contain information explaining why the segment
@@ -529,69 +534,12 @@ public class RoadSegmentMC
 
     public double GetRehabilitationNeedsIndex(Constants constants, int period)
     {
-        if (this.LengthInMetre < constants.MinimumLengthForRehab) return 0; // If segment is very short, then rehabilitation need is zero regardless of PDI, rut depth or SDI
-
-        if (this.PavementDistressIndex < constants.MinimumPdiForRehab(this.SurfaceClass) && this.RutMeanObserved < 15) return 0; // If PDI is very low, then rehabilitation need is zero regardless of rut depth or SDI, except if Rut is above 15 mm
-
-        //Pavement Distress Index plus excess rut. If rut is below threshold, then rehabilitation need is penalised.
-        double needsIndex = this.PavementDistressIndex + (this.RutMeanObserved - constants.TSSExcessRutThresh);
-
-        //If rut is above the threshold and Surface Distress Index is high, then it increases the likelyhood that the 
-        //surface distress is caused by surface instability etc. So if this is the case, bump up the rehabilitation need by
-        //adding part of the Surface Distress Index as well.
-        if (this.RutMeanObserved > constants.TSSExcessRutThresh) needsIndex += 0.1 * this.SurfaceDistressIndex; // The factor of 0.1 is arbitrary and can be adjusted based on expert judgement or calibration
-
-        if (period <= constants.HistoricalMaintenanceUsePeriods)
-        {
-            double historicalPAMaintenanceBoost = this.GetHistoricalPAMaintenanceBoostFactor();
-            needsIndex = needsIndex * historicalPAMaintenanceBoost;
-        }
-
-        return Math.Max(0, needsIndex);
+        return RehabilitationNeedsCalculator.GetRehabilitationNeedsIndex(this, constants, period);
     }
 
     public double GetSurfaceTreatmentNeedsIndex(Constants constants, int period)
     {
-                        
-        //Surface Distress Index minus excess rut if any. If rut is below threshold, then excess rut is zero and does not increase the need for surface treatment.
-        //If rut is above threshold, then excess rut increases the need for surface treatment. 
-        double baseSNI = this.SurfaceDistressIndex - Math.Max(0,this.RutMeanObserved - constants.TSSExcessRutThresh);
-        if (period <= constants.HistoricalMaintenanceUsePeriods)
-        {
-            double historicalPotfillBooster = this.GetHistoricalPotfillMaintenanceBoostFactor();
-            baseSNI = baseSNI * historicalPotfillBooster;
-        }
-
-        if (this.SurfaceClass == "cs")
-        {
-            // Do not consider surface treatment if pavement distress is above specified threshold
-            if (this.PavementDistressIndex > constants.MaxPDIForChipsealResurfacing) return 0.0;
-            if (this.SurfaceDistressIndex < constants.MinSdiToResurfaceCs) return 0.0; // If SDI is very low, then surface treatment need is zero regardless of PDI or rut depth
-            if (this.SurfaceAchievedLifePercent < constants.MinSlaToResurfaceCs) return 0.0; // If surface has not achieved a minimum percentage of its expected life, then surface treatment need is zero
-            if (this.RutMeanObserved > constants.MaxRutForPreservationCS) return 0.0; // If rut is above a certain threshold, then surface treatment need is zero
-
-            // Do not consider surface treatment if number of layers is above specified threshold (stability risk).
-            if (this.SurfaceNumberOfLayers > constants.MaxSealCountForChipSeal) return 0.0;
-
-            double lowTextureBooster = Math.Max(0, constants.TextureThresholdForChipSeal - this.TextureMeanObserved) * constants.TexturePenaltyFactorForChipSeal;
-
-            return Math.Max(0, baseSNI + lowTextureBooster);
-
-        }
-        else if (this.SurfaceClass == "ac" || this.SurfaceClass == "ogpa" || this.SurfaceClass == "slurry")
-        {
-            if (this.PavementDistressIndex > constants.MaxPDIforACorOGPAResurfacing) return 0.0;
-            if (this.SurfaceDistressIndex < constants.MinSdiToResurfaceACandOGPA) return 0.0; // If SDI is very low, then surface treatment need is zero regardless of PDI or rut depth
-            if (this.SurfaceAchievedLifePercent < constants.MinSlaToResurfaceACandOGPA) return 0.0; // If surface has not achieved a minimum percentage of its expected life, then surface treatment need is zero
-            if (this.RutMeanObserved > constants.MaxRutForPreservationAC) return 0.0; // If rut is above a certain threshold, then surface treatment need is zero
-
-            return Math.Max(0, baseSNI);
-        }
-        else
-        {
-            // For other surface classes, we do not have specific thresholds or adjustments, so we just return the base SNI if it is above zero, otherwise return zero.
-            return Math.Max(0, baseSNI);
-        }
+        return SurfacingNeedsIndexCalculator.GetSurfacingNeedsIndex(this, constants, period);
     }
 
 
@@ -719,6 +667,8 @@ public class RoadSegmentMC
 
         int periodsToNextTreatment = Convert.ToInt32(infoFromModel["periods_to_next_treatment"]);
         textModParamValues("par_trigg_info", CandidateSelector.GetCandidateSelectionOutcome(this, constants, periodsToNextTreatment));
+
+        numModParamValues("par_treat_count", this.NumberOfTreatments);
 
         // The following are Network Parameters - to be set automatically by the framework model:        
         //para_sla_rank

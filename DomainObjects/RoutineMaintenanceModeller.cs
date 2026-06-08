@@ -65,6 +65,21 @@ public class RoutineMaintenanceModeller
         }
     }
 
+    /// <summary>
+    /// Resets the maintenance extents for PA (excluding potfill) and SU maintenance to 0. This effectively resets the maintenance history, and 
+    /// ensures that the probabilities and extents of future maintenance events are not influenced by past maintenance. This should be
+    /// called in the period when treatment is applied
+    /// </summary>
+    /// <param name="segment"></param>
+    public void ResetRoutineMaintenanceExtents(RoadSegmentMC segment)
+    {
+        segment.MaintenancePavement = 0;
+        segment.MaintenanceSurfacing = 0;
+        segment.MaintenancePotfill = 0;
+        segment.MaintenanceFreqHistoricalPA = 0;
+        segment.MaintenanceFreqHistoricalSU = 0;
+        segment.MaintenanceFreqHistoricalPoth = 0;
+    }
 
     /// <summary>
     /// Gets the simulated reduction in Rut Depth (not reset value, but reduction in the current value) after PA maintenance (excluding potfill) based on the extent of maintenance.

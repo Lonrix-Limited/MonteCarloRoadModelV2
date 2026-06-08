@@ -64,16 +64,18 @@ public class Incrementer
         // Check if we need to draw a new increment for texture based on the episode length. This will update the TextureIncrement property of the segment as needed
         CheckTextureIncrementForEpisode(segment, _domainModel.Constants.MaximumEpisodeLengthTexture);
 
-        double newValue = segment.TextureMeanLatent + segment.TextureIncrement;
-        double residual = GetTextureResidual(_domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants, newValue);        
-        segment.TextureMeanLatent = newValue;
-        segment.TextureMeanObserved = segment.TextureMeanLatent + residual;
+        IncrementTexture(segment);
 
-        // Maintenance
-        _domainModel.MaintenanceModel.UpdateRoutineMaintenanceExtents(segment);
+        // Maintenance - only update after historic maintenance use period. This is to ensure that we are using the actual maintenance
+        // history for the first few periods, and then we can start applying the maintenance model after that.
+        if (period > _domainModel.Constants.HistoricalMaintenanceUsePeriods)
+        {
+            _domainModel.MaintenanceModel.UpdateRoutineMaintenanceExtents(segment);
+        }
         
         //PDI and SDI
-        IncrementPDIandSDI(segment, _domainModel.Constants);
+        // For historic model only! No PDI or SDI available. So skip this
+        //IncrementPDIandSDI(segment, _domainModel.Constants);
 
         // Ranking parameters will be calculated by the framework model
 
@@ -89,7 +91,7 @@ public class Incrementer
     private void IncrementPDIandSDI(RoadSegmentMC segment,Constants constants)
     {
         // Very simple placeholder logic: if PDI or SDI is zero, it stays zero.
-        
+         
         // PDI: if above zero, increase by base rate of 1% plus 0.5% per year for each mm that rut is above threshold.
         double rutThreshold = constants.TSSExcessRutThresh;
         double excessRut = Math.Max(0, segment.RutMeanObserved - rutThreshold);
@@ -157,6 +159,14 @@ public class Incrementer
         }
     }
 
+
+    private void IncrementTexture(RoadSegmentMC segment)
+    {
+        double newValue = segment.TextureMeanLatent + segment.TextureIncrement;
+        double residual = GetTextureResidual(_domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants, newValue);
+        segment.TextureMeanLatent = newValue;
+        segment.TextureMeanObserved = segment.TextureMeanLatent + residual;                              
+    }
 
     private void CheckRutAndIRIIncrementForEpisode(RoadSegmentMC segment, int maximumEpisodeLength)
     {
@@ -268,6 +278,7 @@ public class Incrementer
         {
             { "rut_mean", segment.RutMeanLatent },
             { "iri_mean", segment.IRIMeanLatent },
+            { "text_mean", segment.TextureMeanLatent },
             { "surf_age", segment.SurfaceAge },
             { "pre_potfill_mtc_extent", segment.MaintenancePotfill },
             { "pre_all_mtc_extent", segment.MaintenancePavement },
