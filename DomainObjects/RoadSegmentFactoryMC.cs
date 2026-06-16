@@ -71,9 +71,10 @@ public static class RoadSegmentFactoryMC
         segment.TextureIncrement = Math.Min(-0.01, model.GetInputDataNumber(segment.ElementIndex, "inp_text_rate"));
         segment.TextureIncrementEpisodeLength = 1; // Initially 1
 
-        // Pavement and Surface Distress Indices
-        segment.PavementDistressIndex = model.GetInputDataNumber(segment.ElementIndex, "inp_pdi");
-        segment.SurfaceDistressIndex = model.GetInputDataNumber(segment.ElementIndex, "inp_sdi");
+        // Pavement and Surface Distress States
+        segment.PavementDistressState = GetDistressStateKey(model, "inp_pde", "inp_pds", segment.ElementIndex);
+        segment.SurfacingDistressState = GetDistressStateKey(model, "inp_sde", "inp_sds", segment.ElementIndex);
+        segment.FlushingDistressState = GetDistressStateKey(model, "inp_fde", "inp_fds", segment.ElementIndex);
 
         // Routine Maintenance 
         segment.MaintenancePavement = model.GetInputDataNumber(segment.ElementIndex, "inp_maint_pa_ext");
@@ -229,6 +230,26 @@ public static class RoadSegmentFactoryMC
         }
     }
 
+
+    private static string GetDistressStateKey(ModelBase model, string extentColumn, string severityColumn, int elementIndex)
+    {
+        double rawExtent = model.GetInputDataNumber(elementIndex, extentColumn);
+        double rawSeverity = model.GetInputDataNumber(elementIndex, severityColumn);
+
+        double extent = Math.Floor(rawExtent);
+        double severity = Math.Floor(rawSeverity);
+
+        if (extent > 3 || severity > 3)
+        {
+            throw new Exception($"Invalid distress extent or severity value for elementIndex {elementIndex}. Extent: {rawExtent}, Severity: {rawSeverity}. Values should be between 0 and 3.");
+        }
+
+        // Collapse severity 2 and 3 into 2 only
+        severity = severity > 1 ? 2 : severity;
+
+        return $"E{extent}-S{severity}";
+
+    }
 
 }
 

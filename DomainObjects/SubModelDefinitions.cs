@@ -205,6 +205,66 @@ public class SubModelDefinitions
 
     #endregion
 
+    #region Distress State-Transition Probability Models
+
+    /// <summary>
+    /// State Transition Simulator for Pavement Distress, to simulate transition between
+    /// states Extent 0, Severity 0 ("E0-S0") to Extent 3, Severity 2 ("E3-S2") for the
+    /// case where the element is not treated. 
+    /// </summary>
+    public MarkovTransitionSimulator PavementDistressModelUntreated { get; set; } = null!;
+
+    /// <summary>
+    /// State Transition Simulator for Pavement Distress, to simulate transition between
+    /// states Extent 0, Severity 0 ("E0-S0") to Extent 3, Severity 2 ("E3-S2") for the
+    /// case where the element is Rehabilitated
+    /// </summary>
+    public MarkovTransitionSimulator PavementDistressModelRehabilitation { get; set; } = null!;
+
+    /// <summary>
+    /// State Transition Simulator for Pavement Distress, to simulate transition between
+    /// states Extent 0, Severity 0 ("E0-S0") to Extent 3, Severity 2 ("E3-S2") for the
+    /// case where the element is Resurfaced
+    /// </summary>
+    public MarkovTransitionSimulator PavementDistressModelResurfacing { get; set; } = null!;
+
+
+    /// <summary>
+    /// State Transition Simulator for Surface Distress (excluding Flushing), to simulate transition between
+    /// states Extent 0, Severity 0 ("E0-S0") to Extent 3, Severity 2 ("E3-S2") for the case where the
+    /// element is not treated. 
+    /// </summary>
+    public MarkovTransitionSimulator SurfaceDistressModelUntreated { get; set; } = null!;
+
+    /// <summary>
+    /// State Transition Simulator for Surface Distress (excluding Flushing), to simulate transition between
+    /// states Extent 0, Severity 0 ("E0-S0") to Extent 3, Severity 2 ("E3-S2") for the case where the
+    /// element is treated (resurfacing or rehabilitation). We do not distinguish between resurfacing and rehabilitation for 
+    /// surface distress because both treatments have a similar effect on surface distress.
+    /// </summary>
+    public MarkovTransitionSimulator SurfaceDistressModelTreated { get; set; } = null!;
+
+    /// <summary>
+    /// State Transition Simulator for Flushing Distress, to simulate transition between
+    /// states Extent 0, Severity 0 ("E0-S0") to Extent 3, Severity 2 ("E3-S2") for the
+    /// case where the element is not treated.
+    /// This is a separate model from the other surface distress because the progression of is different
+    /// </summary>
+    public MarkovTransitionSimulator FlushingDistressModelUntreated { get; set; } = null!;
+
+    /// <summary>
+    /// State Transition Simulator for Flushing Distress, to simulate transition between
+    /// states Extent 0, Severity 0 ("E0-S0") to Extent 3, Severity 2 ("E3-S2") for the
+    /// case where the element is treated (resurfacing or rehabilitation). We do not distinguish between resurfacing and rehabilitation for
+    /// flushing distress because both treatments have a similar effect on flushing distress.
+    /// This is a separate model from the other surface distress because the progression of is different
+    /// </summary>
+    public MarkovTransitionSimulator FlushingDistressModelTreated { get; set; } = null!;
+
+
+    #endregion
+
+
     public SubModelDefinitions(int randomSeed)
     {
         _normalGenerator = new NormalGenerator(randomSeed);

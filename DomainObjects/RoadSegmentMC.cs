@@ -355,7 +355,7 @@ public class RoadSegmentMC
 
     #endregion
     
-    #region High Speed Data (HSD) (Rut, Roughness, Texture etc.)
+    #region High Speed Data (HSD) (Rut, Roughness, Texture, Skid Resistance etc.)
 
     /// <summary>
     /// HSD survey date (expecting ISO date in format 'yyyymmdd' in input data
@@ -420,6 +420,12 @@ public class RoadSegmentMC
     /// </summary>
     public int TextureIncrementEpisodeLength { get; set; }
 
+    /// <summary>
+    /// Percentage of the segment length with Skid Resistance below the Threshold Level, as measured in the High Speed Data survey. 
+    /// This is not a model parameter but only an input column. It is used to help make decisions over short term model development.
+    /// </summary>
+    public double SkidResistanceBelowTLPercent { get; set; }
+
 
     #endregion
 
@@ -477,43 +483,31 @@ public class RoadSegmentMC
 
     #endregion
 
-    #region Distress Indexes and Latent Damage
+    #region Distress States
 
     /// <summary>
-    /// Pavement Distress Index initialised from 'inp_pdi'
+    /// State of Pavement Distress, expressed in Extent (prefix 'E', scale 0,1,2,3) and Severity (prefix 'S', scale 0,1,2).
+    /// Lowest state is "E0-S0" indicating no or isolated distress of very low severity, and highest state is "E3-S3" indicating 
+    /// extensive distress of high severity. 
     /// </summary>
-    public double PavementDistressIndex { get; set; } = 0;
-    
+    public string PavementDistressState { get; set; } = null!;
 
     /// <summary>
-    /// Percentage rank of the Pavement Distress Index value for the segment compared to all other segments in the model. This is
-    /// used for treatment triggers and prioritisation, to allow to compare the PDI value of a segment with the
-    /// distribution of PDI values across the network, rather than just looking at the absolute PDI value. This allows to better
-    /// identify the worst segments in terms of PDI and trigger treatments based on that, rather than just looking at absolute PDI
-    /// thresholds which may not be as effective in identifying the worst segments if the distribution of PDI values is skewed or has outliers.
+    /// State of Surfacing Distress (excluding Flushing), expressed in Extent (prefix 'E', scale 0,1,2,3) and Severity (prefix 'S', scale 0,1,2).
+    /// Lowest state is "E0-S0" indicating no or isolated distress of very low severity, and highest state is "E3-S3" indicating
+    /// extensive distress of high severity. 
     /// </summary>
-    public double PavementDistressIndexRank { get; set; } = 0;
+
+    public string SurfacingDistressState { get; set; } = null!;
 
 
     /// <summary>
-    /// Surfacing Distress Index initialised from 'inp_sdi'
+    /// State of Flushing Distress, expressed in Extent (prefix 'E', scale 0,1,2,3) and Severity (prefix 'S', scale 0,1,2).
+    /// Lowest state is "E0-S0" indicating no or isolated distress of very low severity, and highest state is "E3-S3" indicating
+    /// extensive distress of high severity. 
     /// </summary>
-    public double SurfaceDistressIndex { get; set; } = 0;
-    
-    /// <summary>
-    /// Percentage rank of the Surface Distress Index value for the segment compared to all other segments in the model.
-    /// This is used for treatment triggers and prioritisation, to allow to compare the SDI value of a segment with the
-    /// distribution of SDI values across the network, rather than just looking at the absolute SDI value. This allows to better 
-    /// identify the worst segments in terms of SDI and trigger treatments based on that, rather than just looking at absolute SDI 
-    /// thresholds which may not be as effective in identifying the worst segments if the distribution of SDI values is skewed or has outliers. 
-    /// This is calculated at each period based on the current SDI values of all segments in the model.
-    /// </summary>
-    public double SurfaceDistressIndexRank { get; set; } = 0;
+    public string FlushingDistressState { get; set; } = null!;
 
-    /// <summary>
-    /// Latent Damage caused by distress. Unlike PDI and SDI, this is only fully reset by a Rehabilitation
-    /// </summary>
-    public double LatentDamage { get; set; } = 0;
 
     #endregion
 
@@ -656,8 +650,10 @@ public class RoadSegmentMC
         numModParamValues("par_text_obs", this.TextureMeanObserved);
         numModParamValues("par_text_epi_len", this.TextureIncrementEpisodeLength);
 
-        numModParamValues("par_pdi", this.PavementDistressIndex);
-        numModParamValues("par_sdi", this.SurfaceDistressIndex);
+        textModParamValues("par_pds", this.PavementDistressState);
+        textModParamValues("par_sds", this.SurfacingDistressState);
+        textModParamValues("par_fds", this.FlushingDistressState);
+
         numModParamValues("par_rni", this.GetRehabilitationNeedsIndex(constants, period));
         numModParamValues("par_sni", this.GetSurfaceTreatmentNeedsIndex(constants, period));
 

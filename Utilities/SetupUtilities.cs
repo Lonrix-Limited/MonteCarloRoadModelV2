@@ -9,6 +9,7 @@ using JCass_Core.JFunctions;
 using JCass_Core.Statistics;
 using JCass_Data.Objects;
 using JCass_Data.Utils;
+using JCass_Excel;
 using JCass_ModelCore.MonteCarlo;
 using MonteCarloRoadModelV2.DomainObjects;
 
@@ -166,6 +167,41 @@ public static class SetupUtilities
         // Rut Reset simulator - Rehabilitation
         distributionSetupFile = Path.Combine(workFolder, @"domain_model/cohorts_c_rehab_resets_rut_mean_post.csv");
         domainModel.SubModels.RutResetSimulatorRehab = SetupUtilities.GetDistributionSimulator("rut_mean_post", distributionSetupFile, "Rut Reset - Rehabilitation");
+
+    }
+
+    public static void SetupDistressTransitionModels(DomainObjects.MonteCarloRoadModelV2 domainModel, string workFolder)
+    {
+        //------------------------------------  Set up distribution simulators for distress transitions  ------------------------------------
+
+        // Single spreadsheet contains all Transition Probability Matrices (TPMs) for pavement distress, surface distress, and flushing, for both untreated and
+        // treated (rehabilitation or resurfacing) conditions. Each TPM is on a separate sheet.
+        string distributionSetupFile = Path.Combine(workFolder, @"domain_model/distress_transition_models.xlsx");
+
+
+        // Pavement distress TPMs
+        jcDataSet tpmPavementDistressUntreated = ExcelHelperOXML.GetDataSet(distributionSetupFile, "pd_untreated", false);
+        domainModel.SubModels.PavementDistressModelUntreated = new MarkovTransitionSimulator("pavement_distress_state_untreated", tpmPavementDistressUntreated);
+
+        jcDataSet tpmPavementDistressRehabilitation = ExcelHelperOXML.GetDataSet(distributionSetupFile, "pd_rehab", false);
+        domainModel.SubModels.PavementDistressModelRehabilitation = new MarkovTransitionSimulator("pavement_distress_state_rehabilitation", tpmPavementDistressRehabilitation);
+
+        jcDataSet tpmPavementDistressResurfacing = ExcelHelperOXML.GetDataSet(distributionSetupFile, "pd_resurf", false);
+        domainModel.SubModels.PavementDistressModelResurfacing = new MarkovTransitionSimulator("pavement_distress_state_resurfacing", tpmPavementDistressResurfacing);
+
+        // Surface distress TPMs (excluding Flushing)
+        jcDataSet tpmSurfDistressUntreated = ExcelHelperOXML.GetDataSet(distributionSetupFile, "sd_untreated", false);
+        domainModel.SubModels.SurfaceDistressModelUntreated = new MarkovTransitionSimulator("surface_distress_state_untreated", tpmSurfDistressUntreated);
+
+        jcDataSet tpmSurfaceDistressTreated = ExcelHelperOXML.GetDataSet(distributionSetupFile, "sd_treated", false);
+        domainModel.SubModels.SurfaceDistressModelTreated = new MarkovTransitionSimulator("surface_distress_state_treated", tpmSurfaceDistressTreated);
+
+        // Flushing TPMs
+        jcDataSet tpmFlusingUntreated = ExcelHelperOXML.GetDataSet(distributionSetupFile, "flush_untreated", false);
+        domainModel.SubModels.FlushingDistressModelUntreated = new MarkovTransitionSimulator("flushing_state_untreated", tpmFlusingUntreated);
+
+        jcDataSet tpmFlushingTreated = ExcelHelperOXML.GetDataSet(distributionSetupFile, "flush_treated", false);
+        domainModel.SubModels.FlushingDistressModelTreated = new MarkovTransitionSimulator("flushing_state_treated", tpmFlushingTreated);
 
     }
 

@@ -67,6 +67,9 @@ public class MonteCarloRoadModelV2 : DomainModelBase
             // Set up the models for the reset values after treatments
             SetupUtilities.SetupResetModels(this, workFolder);
 
+            // Set up the Markov Transition Simulators for the pavement condition transitions (Pavement Distress, Surface Distress, Flushing Distress)
+            SetupUtilities.SetupDistressTransitionModels(this, workFolder);
+
             // Set up the models for the reduction in condition after PA maintenance
             SetupUtilities.SetupReductionDueToPaMaintenanceModels(this, workFolder, this.model.Random);
 

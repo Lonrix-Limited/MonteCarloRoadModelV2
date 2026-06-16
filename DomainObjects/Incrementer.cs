@@ -72,10 +72,11 @@ public class Incrementer
         {
             _domainModel.MaintenanceModel.UpdateRoutineMaintenanceExtents(segment);
         }
-        
-        //PDI and SDI
-        // For historic model only! No PDI or SDI available. So skip this
-        //IncrementPDIandSDI(segment, _domainModel.Constants);
+
+
+        // Get the next state for distress states using the transition probability models. 
+        // Skip this for historic model since we have no distress data before 2020
+        MigrateDistressStates(segment, _domainModel.Constants);
 
         // Ranking parameters will be calculated by the framework model
 
@@ -85,30 +86,14 @@ public class Incrementer
 
 
     /// <summary>
-    /// Placeholder for incrementing PDI and SDI. TODO: Update this with simulator etc.
+    /// Use transition probability models to get the next state for Pavement, Surfacing and Flushing Distress
     /// </summary>
     /// <param name="segment"></param>
-    private void IncrementPDIandSDI(RoadSegmentMC segment,Constants constants)
+    private void MigrateDistressStates(RoadSegmentMC segment,Constants constants)
     {
-        // Very simple placeholder logic: if PDI or SDI is zero, it stays zero.
-         
-        // PDI: if above zero, increase by base rate of 1% plus 0.5% per year for each mm that rut is above threshold.
-        double rutThreshold = constants.TSSExcessRutThresh;
-        double excessRut = Math.Max(0, segment.RutMeanObserved - rutThreshold);
-        if (segment.PavementDistressIndex > 0)
-        {
-            double pdiIncrement = 0.5 + (0.1 * excessRut);
-            segment.PavementDistressIndex = segment.PavementDistressIndex + pdiIncrement;
-        }
-
-        // SDI: if above zero, increase by LN(ADT)/5; this gives about 0.5% increase at ADT = 10, 
-        // 1% increase at ADT = 200, and 1.5% increase at ADT = 1600, 2% at ADT 20,000 etc.
-        if (segment.SurfaceDistressIndex > 0)
-        {
-            double sdiIncrement = Math.Log(segment.AverageDailyTraffic+1) / 5.0;
-            segment.SurfaceDistressIndex = segment.SurfaceDistressIndex + sdiIncrement;
-        }
-
+        segment.PavementDistressState = _domainModel.SubModels.PavementDistressModelUntreated.GetNextState(segment.PavementDistressState, _frameworkModel.Random);
+        segment.SurfacingDistressState = _domainModel.SubModels.SurfaceDistressModelUntreated.GetNextState(segment.SurfacingDistressState, _frameworkModel.Random);
+        segment.FlushingDistressState = _domainModel.SubModels.FlushingDistressModelUntreated.GetNextState(segment.FlushingDistressState, _frameworkModel.Random);
     }
 
     /// <summary>

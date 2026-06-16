@@ -405,39 +405,24 @@ public class Resetter
     #region PDI and SDI reset
 
     /// <summary>
-    /// Resets the Pavement Distress Index. For rehab treatments, we assume that the treatment will reset the PDI to . For 
-    /// non-rehab treatments, we assume that the treatment will reduce the PDI but not reset it to 0, as some damage will remain after treatment. 
-    /// TODO: improve logic here.
+    /// Use transition probability models to get the next state for Pavement, Surfacing and Flushing Distress
     /// </summary>
     /// <param name="segment"></param>
-    /// <param name="subModels"></param>
-    /// <param name="treatmentName"></param>
-    /// <param name="constants"></param>
-    /// <param name="random"></param>
-    /// <param name="isRehab"></param>
-    public static void ResetPavementDistressIndex(RoadSegmentMC segment, SubModelDefinitions subModels, string treatmentName, Constants constants, Random random, bool isRehab)
+    private static void ResetDistressStates(RoadSegmentMC segment, SubModelDefinitions subModels, Random random, bool isRehab)
     {
         if (isRehab)
         {
-            segment.PavementDistressIndex = 0;
+            segment.PavementDistressState = subModels.PavementDistressModelRehabilitation.GetNextState(segment.PavementDistressState, random);
         }
         else
         {
-            // For non-rehab treatments, we assume that the treatment will reduce the PDI but not reset it to 0, as
-            // some damage will remain after treatment. This means PDI will start progressing again right after the treatment, unless it 
-            // was zero to begin with
-            segment.PavementDistressIndex = Math.Min(segment.PavementDistressIndex, 0.1);
+            segment.PavementDistressState = subModels.PavementDistressModelResurfacing.GetNextState(segment.PavementDistressState, random);
         }
-    }
 
-    /// <summary>
-    /// Resets the Surface Distress Index. TODO: improve logic here.
-    /// </summary>
-    public static void ResetSurfacingDistressIndex(RoadSegmentMC segment, SubModelDefinitions subModels, string treatmentName, Constants constants, Random random)
-    {
-        segment.SurfaceDistressIndex = 0;        
+        // Surfacing and Flushing distress are not dependent on rehab vs resurf
+        segment.SurfacingDistressState = subModels.SurfaceDistressModelTreated.GetNextState(segment.SurfacingDistressState, random);
+        segment.FlushingDistressState = subModels.FlushingDistressModelTreated.GetNextState(segment.FlushingDistressState, random);
     }
-
 
     #endregion
 

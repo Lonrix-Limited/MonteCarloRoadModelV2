@@ -42,10 +42,7 @@ public class Constants
     private double _csTextureFactor;
     private double _minSlaToResurfaceCs;
     private double _minSlaToResurfaceAc;
-    private double _minSdiToResurfaceCs;
-    private double _minSdiToResurfaceAc;
-    private double _preserveMaxPdiChipSeal;
-    private double _preserveMaxPdiAC;
+    
     private double _maxRutForPreservationCS;
     private double _maxRutForPreservationAC;
 
@@ -55,10 +52,7 @@ public class Constants
 
     // Related to Candidate Selection    
     private double _minLengthRehab;
-    private double _minPdiForRehabAC;
-    private double _minPdiForRehabCS;
-    private double _minPdiForRehabOGPA;
-
+    
     // Related to MCDA Treatment Triggering
     private double _maxSlaForACHeavyMaint;
     private int _minPeriodsBetweenACHeavyMaint;
@@ -119,22 +113,6 @@ public class Constants
     }
 
     /// <summary>
-    /// Minimum Surface Distress Index (SDI) to consider for treatment (EITHER condition applied with minimum PDI)
-    /// </summary>
-    public double CSMinSDIToTreat
-    {
-        get { return _min_sdi_to_treat; }       
-    }
-
-    /// <summary>
-    /// Minimum Pavemenbt Distress Index (PDI) to consider for treatment.  (EITHER condition applied with minimum SDI)    
-    /// </summary>
-    public double CSMinPDIToTreat
-    {
-        get { return _min_pdi_to_treat; }
-    }
-
-    /// <summary>
     /// Minimum length, in metres, to consider an element for ANY treatment. Note this may be overriden for Rehabs by a similar flag that
     /// applies specifically to Rehabs (MinimumLengthForRehab). 
     /// </summary>
@@ -192,40 +170,7 @@ public class Constants
         get { return _minSlaToResurfaceAc; }
     }
 
-    /// <summary>
-    /// Minimum Surface Distress Index to consider for resurfacing treatments on Chipseals. Below this value the
-    /// Surfacing Needs Index is zero for Chipseals. 
-    /// </summary>
-    public double MinSdiToResurfaceCs
-    {
-        get { return _minSdiToResurfaceCs; }
-    }
-
-    /// <summary>
-    /// Minimum Surface Distress Index to consider for resurfacing treatments on AC and OGPA. Below this value the
-    /// surfacing Needs Index is zero for AC and OGPA.
-    /// </summary>
-    public double MinSdiToResurfaceACandOGPA
-    {
-        get { return _minSdiToResurfaceAc; }
-    }
-
-    /// <summary>
-    /// Do not consider Preservation ChipSeal treatment if PDI is above this value 
-    /// </summary>
-    public double MaxPDIForChipsealResurfacing
-    {
-        get { return _preserveMaxPdiChipSeal; }
-    }
-
-    /// <summary>
-    /// Do not consider Preservation AC treatment if PDI is above this value 
-    /// </summary>
-    public double MaxPDIforACorOGPAResurfacing
-    {
-        get { return _preserveMaxPdiAC; }
-    }
-
+    
     /// <summary>
     /// Maximum rut depth for Preservation AC treatment to be considered
     /// </summary>
