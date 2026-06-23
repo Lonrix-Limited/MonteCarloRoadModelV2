@@ -35,10 +35,10 @@ Every random draw routes through the framework-seeded `NormalGenerator` and
 `model.Random`, so a given seed reproduces the same run bit-for-bit.
 
 To soften noise in the first few periods (when every segment is fresh and a
-single bad post-treatment draw can cascade into spurious re-treatment),
-`Constants.MinimiseStochasticEffectsPeriod` switches the reset draws (rut, IRI,
-texture) to a 5-draw mean. After that period the model reverts to single
-draws.
+single bad post-treatment draw can cascade into spurious re-treatment), a
+configurable `minimise_stochastic_effects_period` switches the reset draws
+(rut, IRI, texture) to a 5-draw mean. After that period the model reverts to
+single draws.
 
 ## What it models
 
@@ -89,10 +89,10 @@ between simulated and historical distributions:
 
 1. **Empirical, cohort-keyed distribution simulators** rather than parametric
    decay curves. Rut, IRI, texture, maintenance-extent, reset and reduction
-   draws all use `DistributionSimulator`, keyed on cohort variables (rut/IRI
-   bucket, surface age, ADT, heavy %, surface thickness, surface class,
-   surface-count, and recent PA/SU/potfill extents) so the tails are
-   reproduced, not just the means.
+   draws all use a cohort-based distribution simulator, keyed on cohort
+   variables (rut/IRI bucket, surface age, ADT, heavy %, surface thickness,
+   surface class, surface-count, and recent PA/SU/potfill extents) so the
+   tails are reproduced, not just the means.
 2. **Heteroskedastic residuals via piecewise-linear SD functions.** The
    standard deviation of the residual at a given rut depth (or IRI value, or
    texture value) is itself read from a piecewise-linear function fit to the
@@ -114,8 +114,7 @@ between simulated and historical distributions:
    risk of any given segment crossing a treatment threshold.
 5. **Episode-length redraws.** Rut/IRI and texture increments are not redrawn
    every period — a sampled increment persists for an "episode" of N years
-   (`Constants.MaximumEpisodeLengthRutAndIRI` and
-   `Constants.MaximumEpisodeLengthTexture`), mimicking the serial correlation
+   (configurable via `episode_length_max`), mimicking the serial correlation
    seen in real HSD time-series. When the episode expires (or a reset fires),
    a fresh increment is drawn.
 6. **Separate reset simulators per treatment family.** A *rehabilitation* and
@@ -130,43 +129,41 @@ between simulated and historical distributions:
 
 ## Stochastic components at a glance
 
-All wired up in [SubModelDefinitions](DomainObjects/SubModelDefinitions.cs)
-and populated from CSVs and one workbook by
-[SetupUtilities](Utilities/SetupUtilities.cs):
+All wired up in `SubModelDefinitions` and populated from CSVs and one
+workbook by `SetupUtilities`:
 
 | Component | Type | Purpose |
 | --- | --- | --- |
-| `RutIncrementSimulator` | `DistributionSimulator` | Yearly rut increment |
-| `IRIIncrementSimulator` | `DistributionSimulator` | Yearly IRI increment |
-| `TextureIncrementSimulator` | `DistributionSimulator` | Yearly texture increment (CS only) |
-| `RutIncrementResidualSDFunction` | `PieceWiseLinearModel` | Rut residual SD vs current rut |
-| `IRIIncrementResidualSDFunction` | `PieceWiseLinearModel` | IRI residual SD vs current IRI |
-| `TextureIncrementResidualSDFunction` | `PieceWiseLinearModel` | Texture residual SD vs current texture |
-| `MaintPaProbabilityModelAC` / `…CS` | `LogisticModel` | P(PA maintenance next year), AC / chipseal |
-| `MaintSuProbabilityModelAC` / `…CS` | `LogisticModel` | P(SU maintenance next year), AC / chipseal |
-| `PotfillProbabilityModelAC` / `…CS` | `LogisticModel` | P(pothole fill next year), AC / chipseal |
-| `MaintenanceExtentPA` / `MaintenanceExtentSU` / `MaintenanceExtentPotfill` | `DistributionSimulator` | Extent given triggered |
-| `RutResetSimulatorResurf` / `…Rehab` | `DistributionSimulator` | Post-treatment rut |
-| `IRIResetSimulatorResurf` / `…Rehab` | `DistributionSimulator` | Post-treatment IRI |
-| `TextureResetSimulator` | `DistributionSimulator` | Post-treatment texture (all treatments) |
-| `RutReductionAfterPaMaintenanceSimulator` | `DistributionSimulator` | Rut reduction by PA extent |
-| `IRIReductionAfterPaMaintenanceSimulator` | `DistributionSimulator` | IRI reduction by PA extent |
-| `PavementDistressModelUntreated` / `…Rehabilitation` / `…Resurfacing` | `MarkovTransitionSimulator` | Pavement distress state transitions |
-| `SurfaceDistressModelUntreated` / `…Treated` | `MarkovTransitionSimulator` | Surfacing distress state transitions |
-| `FlushingDistressModelUntreated` / `…Treated` | `MarkovTransitionSimulator` | Flushing state transitions |
-| `TSSForHoldingAction` / `TSSForRehabilitation` | `PieceWiseLinearModel` | Treatment suitability scoring curves (built from `treatment_suitability_scores` lookups, not from a CSV) |
+| `RutIncrementSimulator` | DistributionSimulator | Yearly rut increment |
+| `IRIIncrementSimulator` | DistributionSimulator | Yearly IRI increment |
+| `TextureIncrementSimulator` | DistributionSimulator | Yearly texture increment (CS only) |
+| `RutIncrementResidualSDFunction` | PieceWiseLinearModel | Rut residual SD vs current rut |
+| `IRIIncrementResidualSDFunction` | PieceWiseLinearModel | IRI residual SD vs current IRI |
+| `TextureIncrementResidualSDFunction` | PieceWiseLinearModel | Texture residual SD vs current texture |
+| `MaintPaProbabilityModelAC` / `…CS` | LogisticModel | P(PA maintenance next year), AC / chipseal |
+| `MaintSuProbabilityModelAC` / `…CS` | LogisticModel | P(SU maintenance next year), AC / chipseal |
+| `PotfillProbabilityModelAC` / `…CS` | LogisticModel | P(pothole fill next year), AC / chipseal |
+| `MaintenanceExtentPA` / `MaintenanceExtentSU` / `MaintenanceExtentPotfill` | DistributionSimulator | Extent given triggered |
+| `RutResetSimulatorResurf` / `…Rehab` | DistributionSimulator | Post-treatment rut |
+| `IRIResetSimulatorResurf` / `…Rehab` | DistributionSimulator | Post-treatment IRI |
+| `TextureResetSimulator` | DistributionSimulator | Post-treatment texture (all treatments) |
+| `RutReductionAfterPaMaintenanceSimulator` | DistributionSimulator | Rut reduction by PA extent |
+| `IRIReductionAfterPaMaintenanceSimulator` | DistributionSimulator | IRI reduction by PA extent |
+| `PavementDistressModelUntreated` / `…Rehabilitation` / `…Resurfacing` | MarkovTransitionSimulator | Pavement distress state transitions |
+| `SurfaceDistressModelUntreated` / `…Treated` | MarkovTransitionSimulator | Surfacing distress state transitions |
+| `FlushingDistressModelUntreated` / `…Treated` | MarkovTransitionSimulator | Flushing state transitions |
+| `TSSForHoldingAction` / `TSSForRehabilitation` | PieceWiseLinearModel | Treatment suitability scoring curves (built from `treatment_suitability_scores` lookups, not from a CSV) |
 
 Coefficient and distribution CSVs (`cohorts_b_increments_*.csv`,
 `cohorts_d_maint_model_data_*.csv`, `cohorts_c_*_resets_*.csv`,
 `cohorts_maint_reduc_data_final_*.csv`, `inc_resids_plm_setup_codes.csv`, and
 the R-exported `term`/`estimate` files `logistic_*.csv`) plus the
-`distress_transition_models.xlsx` workbook ship inside the domain-model bundle
-and are read at startup from the project's `domain_model/` folder.
+`distress_transition_models.xlsx` workbook ship inside the domain-model
+bundle and are read at startup from the project's `domain_model/` folder.
 
 ## Framework lifecycle hooks
 
-The [MonteCarloRoadModelV2](DomainObjects/MonteCarloRoadModelV2.cs) class
-subclasses `DomainModelBase` and implements:
+The `MonteCarloRoadModelV2` class subclasses `DomainModelBase` and implements:
 
 - `SetupInstance()` — one-time wire-up of all simulators, residual functions,
   probability models, reset models, reduction models, distress-state
@@ -174,13 +171,13 @@ subclasses `DomainModelBase` and implements:
   and workbook.
 - `Initialise(iElem, …)` — period-0 segment build from `inp_*` raw inputs;
   arbitrates HSD survey date against latest treatment date and re-simulates
-  rut/IRI/texture (and forces all three distress states to `E0-S0`) when the
-  segment was clearly treated after the survey.
+  rut/IRI/texture (and forces all three distress states to `E0-S0`) when
+  the segment was clearly treated after the survey.
 - `Increment(iElem, iPeriod, …)` — per-element, per-period deterioration
-  draws + Markov transitions for the three distress states, + the next-period
-  maintenance probability/extent sample (only after
-  `Constants.HistoricalMaintenanceUsePeriods` so the historical maintenance
-  inputs are used unmodified for the first few periods).
+  draws + Markov transitions for the three distress states, + the
+  next-period maintenance probability/extent sample (only after the
+  historical-maintenance window so the historical inputs are used unmodified
+  for the first few periods).
 - `Reset(treatment, iElem, iPeriod, …)` — post-treatment state update:
   surface age, thickness, layer count, surface function transitions
   (`1 → 2 → R`, plus a `1a` branch for preseal-repair history) and a fresh
@@ -193,18 +190,15 @@ subclasses `DomainModelBase` and implements:
   below).
 - `GetTriggeredMaintenance(...)` — returns `null` by design. Routine
   maintenance load is modelled probabilistically via
-  [RoutineMaintenanceModeller](DomainObjects/RoutineMaintenanceModeller.cs)
-  and the PA / SU / potfill probability and extent simulators rather than as
-  triggered `TreatmentInstance` objects.
+  `RoutineMaintenanceModeller` and the PA / SU / potfill probability and
+  extent simulators rather than as triggered `TreatmentInstance` objects.
 - `DoEndOfPeriodCalculations(iPeriod)` — no-op in this version.
 
-The central domain object is
-[RoadSegmentMC](DomainObjects/RoadSegmentMC.cs) (identification, quantity,
-surfacing/pavement, ONRC/road-class, traffic, HSD condition, distress states,
-maintenance properties, treatment-trigger flags). Its
+The central domain object is `RoadSegmentMC` (identification, quantity,
+surfacing/pavement, ONRC/road-class, traffic, HSD condition, distress
+states, maintenance properties, treatment-trigger flags). Its
 `SetParameterValues(...)` method is the canonical write-contract for all
-`par_*` outputs the framework expects;
-[RoadSegmentFactoryMC.GetFromRawData](DomainObjects/RoadSegmentFactoryMC.cs)
+`par_*` outputs the framework expects; `RoadSegmentFactoryMC.GetFromRawData`
 is the authoritative reader for the `inp_*` input columns the setup workbook
 must supply. Date columns are expected in 8-character ISO format
 (`yyyymmdd`); the framework will throw a clear error at initialisation if a
@@ -215,8 +209,7 @@ column is malformed.
 `GetTreatmentCandidates(...)` runs a two-stage MCDA pipeline per element per
 period:
 
-**Stage 1 — Candidate selection**
-([CandidateSelector.cs](DomainObjects/CandidateSelector.cs)). Returns one of:
+**Stage 1 — Candidate selection** (`CandidateSelector.cs`). Returns one of:
 `ok`, `ok - 2nd coat needed`, `treat flag is 0`, `committed near future`,
 `segment too short`, `segment too long`, `sla too low`, or
 `birthday type: too young`. Thresholds come from the `candidate_selection`
@@ -227,23 +220,20 @@ Only outcomes starting with `"ok"` advance to Stage 2. The Stage-1 outcome
 is also written to `par_trigg_info` so it shows up in framework logs and the
 web UI.
 
-**Stage 2 — Treatment triggering**
-([TreatmentsTrigger.cs](DomainObjects/TreatmentsTrigger.cs)). Dispatches on
+**Stage 2 — Treatment triggering** (`TreatmentsTrigger.cs`). Dispatches on
 the segment's `NextSurface` (which the input pre-processing can force,
 allowing e.g. a current chipseal to be steered toward an asphalt next
 surface):
 
-- **Asphaltic next-surface** (`ac`, `ogpa`, `slurry`) →
-  [TriggerAsphalts.cs](DomainObjects/TriggerAsphalts.cs) emits up to four
-  candidates: **Preservation thin AC** (`{class}_resurf`), **Holding thin AC**
-  (`{class}_holding` — a composite treatment with cost split via
-  `AssignBudgetCategoryFractions` into `Resurfacing` and `Pre-Repairs`),
-  **AC Heavy Maintenance** (`{class}_hmaint`, gated by
+- **Asphaltic next-surface** (`ac`, `ogpa`, `slurry`) → `TriggerAsphalts`
+  emits up to four candidates: **Preservation thin AC** (`{class}_resurf`),
+  **Holding thin AC** (`{class}_holding` — a composite treatment with cost
+  split via `AssignBudgetCategoryFractions` into `Resurfacing` and
+  `Pre-Repairs`), **AC Heavy Maintenance** (`{class}_hmaint`, gated by
   `MinPeriodsBetweenACHeavyMaint`, `MaxSlaForACHeavyMaint`, and requires the
   pavement distress state to imply a non-zero extent), and
   **Rehabilitation** (`{class}_rehab`, requires `CanRehabFlag == 1`).
-- **Chipseal next-surface** (`cs`) →
-  [TriggerChipseals.cs](DomainObjects/TriggerChipseals.cs) emits:
+- **Chipseal next-surface** (`cs`) → `TriggerChipseals` emits:
   **Second-coat** (forced, `cs_2nd_coat_r` or `cs_2nd_coat_h` depending on
   whether the previous surface function was `1` or `1a`, when
   `SecondCoatNeeded` and `SLA >= 100`); otherwise **Preservation chipseal**
@@ -262,22 +252,19 @@ and AC heavy maintenance is gated on `extent > 0`.
 
 **Rehabilitation Needs Index and Surfacing Needs Index.** Per-period, the
 domain model computes two scalar indices per segment
-([RehabilitationNeedsCalculator](DomainObjects/RehabilitationNeedsCalculator.cs),
-[SurfacingNeedsIndexCalculator](DomainObjects/SurfacingNeedsIndexCalculator.cs))
-and writes them as `par_rni` and `par_sni`. The framework ranks them across
-the network and feeds the ranks back as `par_rni_rank` / `par_sni_rank`,
-which the model reads in the next period (via `RoadSegmentFactoryMC.GetFromModel`)
-to score candidate treatments. The RNI combines pavement distress state ×
-10, current rut depth, and a recent-maintenance bump while the model is still
-inside `HistoricalMaintenanceUsePeriods`. The SNI combines surfacing distress
+(`RehabilitationNeedsCalculator`, `SurfacingNeedsIndexCalculator`) and writes
+them as `par_rni` and `par_sni`. The framework ranks them across the network
+and feeds the ranks back as `par_rni_rank` / `par_sni_rank`, which the model
+reads in the next period (via `RoadSegmentFactoryMC.GetFromModel`) to score
+candidate treatments. The RNI combines pavement distress state × 10, current
+rut depth, and a recent-maintenance bump while the model is still inside
+the historical-maintenance use window. The SNI combines surfacing distress
 state × 10, plus chipseal-specific texture and flushing penalties, plus a
-skid-resistance contribution for the first
-`Constants.SkidResistanceMaxPeriod` periods. Both indices return 0 outside
-their applicable length / SLA / rut gates — so a 0 rank doesn't mean
-"low-need", it means "not eligible".
+skid-resistance contribution for the first few periods. Both indices return
+0 outside their applicable length / SLA / rut gates — so a 0 rank doesn't
+mean "low-need", it means "not eligible".
 
-**Treatment Suitability Score (TSS)**
-([TreatmentSuitabilityScorer.cs](DomainObjects/TreatmentSuitabilityScorer.cs))
+**Treatment Suitability Score (TSS)** (`TreatmentSuitabilityScorer.cs`)
 arbitrates between candidates inside the framework's optimisation stage:
 
 - **Preservation** uses the segment's `SurfacingNeedsIndexRank` directly
@@ -294,15 +281,14 @@ A non-trivial design touch: when a route is **not** rehab-eligible
 (`CanRehabFlag == 0`), Preseal Repair and AC Heavy Maintenance fall back to
 the rehabilitation TSS curve — they're effectively standing in for rehab on
 routes that can't be rehabilitated, so they should compete on the rehab-side
-scale. On rehab-eligible routes they use the holding-action curve and compete
-against the actual rehab candidate, which carries the rehab TSS.
+scale. On rehab-eligible routes they use the holding-action curve and
+compete against the actual rehab candidate, which carries the rehab TSS.
 
 ## Configuration and lookups
 
-Tunables live in the project's lookup workbook (`ModelSetup/lookups.xlsx` in
-this repo), loaded into the framework's `Lookups` dictionary-of-dictionaries
-and exposed via the [Constants](DomainObjects/Constants.cs) class. The
-lookup sets the model reads from:
+Tunables live in the project's lookup workbook, loaded into the framework's
+`Lookups` dictionary-of-dictionaries and exposed via the `Constants` class.
+The lookup sets the model reads from:
 
 **Core thresholds and gates**
 
@@ -352,8 +338,8 @@ lookup sets the model reads from:
 - `road_class` — maps ONRC categories to `l` / `m` / `h` traffic class
 - `unit_rates_general` — flat treatment-name → $/m² rates for non-rehab
   treatments
-- `cs_rehab_rate` / `cs_rehab_rate`-style sets keyed
-  `{class}_rehab_rate` — rehab unit rates keyed by ONRC
+- Rehab unit-rate sets keyed `{class}_rehab_rate` (e.g. `cs_rehab_rate`) —
+  rehab unit rates keyed by ONRC
 
 If a lookup set or key is missing the model raises a clear error at setup
 time rather than silently substituting a default.
@@ -374,8 +360,8 @@ time rather than silently substituting a default.
   simulator, because the modelling dataset did not contain enough non-CS
   texture-evolution data to fit a meaningful distribution.
 - **Surfacing and flushing distress TPMs do not distinguish rehab vs
-  resurf**, only treated vs untreated — both rehab and resurfacing reset
-  the surfacing/flushing state through the same `…Treated` TPM. Pavement
+  resurf**, only treated vs untreated — both rehab and resurfacing reset the
+  surfacing/flushing state through the same `…Treated` TPM. Pavement
   distress *does* have a separate rehab vs resurf TPM.
 - **Reduction floors are hard-coded** (1.5 mm rut, 2.5 mm/m IRI) inside
   `Incrementer.IncrementRut` / `IncrementIRI`. These prevent unrealistic
@@ -393,13 +379,10 @@ time rather than silently substituting a default.
 - .NET 9 (`net9.0`), `Nullable` + `ImplicitUsings` enabled,
   `TreatWarningsAsErrors=true`.
 - References sibling Cassandra framework projects `JCass_Core` and
-  `JCass_ModelCore` via relative path (`..\..\cassandra_main\…`), which must
-  exist on disk alongside this repo.
-- An `AfterTargets="Build"` target in the csproj copies the built DLL to
-  multiple destination `domain_model/` folders under a fixed Dropbox path.
-  If you're not the maintainer or don't have those folders, either prune the
-  `DomainModelDropTargets` item group or expect the copy step to fail
-  silently — it does not break the build.
+  `JCass_ModelCore`, which must exist on disk alongside this repo.
+- The compiled DLL is consumed by Cassandra (desktop or web) by dropping it
+  into the project's `domain_model/` folder alongside the setup CSVs, the
+  `distress_transition_models.xlsx` workbook, and the lookup workbook.
 
 ## Reference
 
