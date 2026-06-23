@@ -623,7 +623,8 @@ public class Constants
     {
 
         // General constants
-        _baseDate = JCass_Core.Utils.HelperMethods.ParseDateNoTime(lookupSets["general"]["base_date"]);
+        string baseDateStr = (string)lookupSets["general"]["base_date"];
+        _baseDate = JCass_Core.Utils.HelperMethods.ParseISODateNoTime(baseDateStr);
         _minimiseStochasticEffectsPeriod = Convert.ToInt32(lookupSets["general"]["minimise_stochastic_effects_period"]);
 
         // Candidate Selection related constants
