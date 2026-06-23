@@ -65,14 +65,12 @@ public static class TriggerAsphalts
             if (segment.CanRehabFlag == 0) return; // If the segment is not eligible for rehabilitation, do not add a treatment
 
             string treatmentName = segment.SurfaceClassForTreatment + "_rehab";
-
-            double pdi = segment.PavementDistressIndex;
-
+            
             double tssScore = TreatmentSuitabilityScorer.GetTSSForRehabilitation(segment, domainModel, iPeriod);
             if (tssScore <= 0) return; // If the TSS score is below the minimum allowed, do not add a treatment
 
             string reason = $"SLA={Math.Round(segment.SurfaceAchievedLifePercent, 1)}";
-            string comment = $"PDI={Math.Round(pdi, 1)}, TSS={Math.Round(tssScore, 2)}";
+            string comment = $"PDS={segment.PavementDistressState}, TSS={Math.Round(tssScore, 2)}";
 
             double quantity = segment.AreaSquareMetre;
             string unitRateSetKey = segment.SurfaceClassForTreatment + "_rehab_rate";
@@ -102,8 +100,8 @@ public static class TriggerAsphalts
 
             if (segment.NextSurface == "cs") return;
 
-            // For preservation, if PDI is above the maximum threshold, do not add a treatment
-            if (segment.PavementDistressIndex > domainModel.Constants.TSSHoldingMaxPdiAC) return;
+            // If the current pavement distress state is in the exclusion list for TSS for Holding Actions, then do not add a treatment.
+            if (domainModel.Constants.TSSHoldingExclusionStates.Contains(segment.PavementDistressState)) return;
 
             // For Holding AC, do not eliminate if asphalt overlay is not allowed (in 'segment.AsphaltOkFlag') because of too high deflection etc.
             // This is because this treatment is assumed to include strengthening repairs to adress weak areas
@@ -111,15 +109,14 @@ public static class TriggerAsphalts
             double tssScore = TreatmentSuitabilityScorer.GetTSSForHoldingAction(segment, domainModel, iPeriod);
             // If the TSS score is below the minimum allowed, do not add a treatment
             if (tssScore <= 0) return;
-
-            double sdi = segment.SurfaceDistressIndex;
+            
             string reason = $"SLA={Math.Round(segment.SurfaceAchievedLifePercent, 1)}";
-            string comment = $"SDI={Math.Round(sdi, 1)}, TSS={Math.Round(tssScore, 2)}";
+            string comment = $"SDS={segment.SurfacingDistressState}; FDS={segment.FlushingDistressState}; TSS={Math.Round(tssScore, 2)}";
 
             double quantity = segment.AreaSquareMetre;
 
             double overlayQuantity = quantity;
-            double repairQuantity = quantity * Math.Min(100, segment.PavementDistressIndex) / 100;
+            double repairQuantity = quantity * RoadSegmentMC.GetExtentEstimateFromStateScore(segment.PavementDistressState);
 
             var unitRateSet = lookups["unit_rates_general"];
             if (!unitRateSet.ContainsKey(resurfCode)) throw new Exception($"Unit rate for Treatment '{resurfCode}' not found in lookup set 'unit_rates_general'.");
@@ -169,10 +166,7 @@ public static class TriggerAsphalts
         try
         {
             string treatmentName = segment.SurfaceClassForTreatment + "_resurf";
-
-            // For preservation, if PDI is above the maximum threshold, do not add a treatment
-            if (segment.PavementDistressIndex > domainModel.Constants.MaxPDIforACorOGPAResurfacing) return;
-
+            
             // If asphalt overlay is not allowed because of too high deflection etc, do not add a treatment
             if (segment.CanDoThinACOverlay == 0) return;
 
@@ -180,10 +174,9 @@ public static class TriggerAsphalts
 
             // If the TSS score is below the minimum allowed, do not add a treatment
             if (tssScore <= 0) return;
-
-            double sdi = segment.SurfaceDistressIndex;
+            
             string reason = $"SLA={Math.Round(segment.SurfaceAchievedLifePercent, 1)}";
-            string comment = $"SDI={Math.Round(sdi, 1)}, TSS={Math.Round(tssScore, 2)}";
+            string comment = $"SDS={segment.SurfacingDistressState}, TSS={Math.Round(tssScore, 2)}";
 
             double overlayQuantity = segment.AreaSquareMetre;
 
@@ -211,7 +204,7 @@ public static class TriggerAsphalts
             // surface class should be 'ac' or 'ogpa'
             string treatmentName = segment.SurfaceClassForTreatment + "_hmaint";
 
-            double presealAreaFraction = segment.PavementDistressIndex/100;
+            double presealAreaFraction = RoadSegmentMC.GetExtentEstimateFromStateScore(segment.PavementDistressState);
             if (presealAreaFraction <= 0) return; // If there is no area in distress, do not add a treatment
 
             int periodsToLastNonRoutineTreatment = PeriodsToLastTreatmentNotRoutineMaintenance(infoFromModel, iPeriod);
@@ -244,7 +237,7 @@ public static class TriggerAsphalts
             if (tssScore <= 0) return; // If the TSS score is below the minimum allowed, do not add a treatment
 
             string reason = $"SLA={Math.Round(segment.SurfaceAchievedLifePercent, 1)}";
-            string comment = $"PDI={Math.Round(segment.PavementDistressIndex, 1)}, TSS={Math.Round(tssScore, 2)}";
+            string comment = $"PDS= {segment.PavementDistressState}; SDS = {segment.SurfacingDistressState}; TSS={Math.Round(tssScore, 2)}";
 
             double quantity = segment.AreaSquareMetre * presealAreaFraction;
 

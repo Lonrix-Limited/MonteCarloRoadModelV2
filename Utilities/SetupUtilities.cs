@@ -38,8 +38,7 @@ public static class SetupUtilities
 
         domainModel.SubModels.RutIncrementResidualSDFunction = GetPieceWiseLinearModel("rut_inc_resid", allSetupData);
         domainModel.SubModels.IRIIncrementResidualSDFunction = GetPieceWiseLinearModel("iri_inc_resid", allSetupData);
-        domainModel.SubModels.TextureIncrementResidualSDFunction = GetPieceWiseLinearModel("text_inc_resid", allSetupData);
-               
+        domainModel.SubModels.TextureIncrementResidualSDFunction = GetPieceWiseLinearModel("text_inc_resid", allSetupData);               
 
     }
 
@@ -219,9 +218,7 @@ public static class SetupUtilities
     }
 
     public static void SetupTreatmentSuitabilityScoreModels(DomainObjects.MonteCarloRoadModelV2 domainModel)
-    {        
-        double excessRutThreshold = domainModel.Constants.TSSExcessRutThresh;
-                
+    {                                
         string tssModelSetup = $"{domainModel.Constants.TSSRehabRniRank},0|100,100";
         domainModel.SubModels.TSSForRehabilitation = new PieceWiseLinearModel(tssModelSetup, true);  //Previous model did not extrapolate - I think this is better for breaking ties
 

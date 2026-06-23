@@ -36,8 +36,7 @@ public static class RoadSegmentFactoryMC
 
         // Classification/Carriageway/Rainfall
         segment.UrbanRural = model.GetInputDataText(segment.ElementIndex, "inp_urban_rural").ToLower();
-        segment.ONRC = model.GetInputDataText(segment.ElementIndex, "inp_onrc").ToLower();
-        segment.RainfallMM = model.GetInputDataNumber(segment.ElementIndex, "inp_rainfall");
+        segment.ONRC = model.GetInputDataText(segment.ElementIndex, "inp_onrc").ToLower();        
         segment.RoadClass = model.Lookups["road_class"][segment.ONRC].ToString()
             ?? throw new InvalidOperationException($"Lookup 'road_class' for ONRC '{segment.ONRC}' returned null on element {elementIndex}");
 
@@ -71,10 +70,10 @@ public static class RoadSegmentFactoryMC
         segment.TextureIncrement = Math.Min(-0.01, model.GetInputDataNumber(segment.ElementIndex, "inp_text_rate"));
         segment.TextureIncrementEpisodeLength = 1; // Initially 1
 
-        // Pavement and Surface Distress States
-        segment.PavementDistressState = GetDistressStateKey(model, "inp_pde", "inp_pds", segment.ElementIndex);
-        segment.SurfacingDistressState = GetDistressStateKey(model, "inp_sde", "inp_sds", segment.ElementIndex);
-        segment.FlushingDistressState = GetDistressStateKey(model, "inp_fde", "inp_fds", segment.ElementIndex);
+        // Pavement, Surfacing and Flushing Distress States
+        segment.PavementDistressState = GetStateChecked(model.GetInputDataText(segment.ElementIndex, "inp_pds"));
+        segment.SurfacingDistressState = GetStateChecked(model.GetInputDataText(segment.ElementIndex, "inp_sds"));
+        segment.FlushingDistressState = GetStateChecked(model.GetInputDataText(segment.ElementIndex, "inp_fds"));
 
         // Routine Maintenance 
         segment.MaintenancePavement = model.GetInputDataNumber(segment.ElementIndex, "inp_maint_pa_ext");
@@ -156,10 +155,9 @@ public static class RoadSegmentFactoryMC
         segment.TextureIncrementEpisodeLength = Convert.ToInt32(numParamValues["par_text_epi_len"]);
 
         // Distress indices
-        segment.PavementDistressIndex = numParamValues["par_pdi"];
-        segment.SurfaceDistressIndex = numParamValues["par_sdi"];
-        segment.PavementDistressIndexRank = numParamValues["par_pdi_rank"];
-        segment.SurfaceDistressIndexRank = numParamValues["par_sdi_rank"];
+        segment.PavementDistressState = textParamValues["par_pds"];
+        segment.SurfacingDistressState = textParamValues["par_sds"];
+        segment.FlushingDistressState = textParamValues["par_fds"];
 
         segment.RehabilitationNeedsIndexRank = numParamValues["par_rni_rank"];
         segment.SurfacingNeedsIndexRank = numParamValues["par_sni_rank"];
@@ -230,25 +228,21 @@ public static class RoadSegmentFactoryMC
         }
     }
 
-
-    private static string GetDistressStateKey(ModelBase model, string extentColumn, string severityColumn, int elementIndex)
+    /// <summary>
+    /// Checks the initial state and assigns 'E0-S0' for cases where we do not have data. TODO: Revisit this later
+    /// </summary>
+    /// <param name="stateRawValue">Raw state code from input data</param>
+    /// <returns>Checked state code</returns>
+    private static string GetStateChecked(string stateRawValue)
     {
-        double rawExtent = model.GetInputDataNumber(elementIndex, extentColumn);
-        double rawSeverity = model.GetInputDataNumber(elementIndex, severityColumn);
-
-        double extent = Math.Floor(rawExtent);
-        double severity = Math.Floor(rawSeverity);
-
-        if (extent > 3 || severity > 3)
+        if (stateRawValue.ToLower() == "unseen")
         {
-            throw new Exception($"Invalid distress extent or severity value for elementIndex {elementIndex}. Extent: {rawExtent}, Severity: {rawSeverity}. Values should be between 0 and 3.");
+            return "E0-S0";
         }
-
-        // Collapse severity 2 and 3 into 2 only
-        severity = severity > 1 ? 2 : severity;
-
-        return $"E{extent}-S{severity}";
-
+        else
+        {
+            return stateRawValue;
+        }
     }
 
 }

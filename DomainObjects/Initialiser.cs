@@ -46,8 +46,9 @@ public class Initialiser
         segment.TextureMeanObserved = segment.TextureMeanLatent;
         segment.TextureIncrement = GetTextureIncrementEstimate(segment);
 
-        segment.PavementDistressIndex = GetInitialPDIValue(segment);
-        segment.SurfaceDistressIndex = GetInitialSDIValue(segment);
+        // Check if the initial condition states need to be reset based on the age of the HSD survey relative to
+        // the pavement and surfacing ages, and set accordingly
+        this.SetInitialConditionStateValues(segment);
 
         segment.NumberOfTreatments = 0; // Initialise treatment count;
 
@@ -170,8 +171,10 @@ public class Initialiser
         {
             return Incrementer.GetRutIncrementForEpisode(segment, _domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants);
         }
-        
-        return segment.RutIncrement; // Return the rut increment from the input file if the segment has not been treated since the HSD survey
+
+        // Return the rut increment from the input file if the segment has not been treated since the HSD survey. Cap at zero to avoid any negative increments which
+        // would not make sense in this context
+        return Math.Max(0, segment.RutIncrement); 
 
     }
 
@@ -214,7 +217,7 @@ public class Initialiser
             return Resetter.GetIRIResetValue(segment, _domainModel.SubModels, treatmentName, _domainModel.Constants, _frameworkModel.Random, 0);            
         }
 
-        return segment.IRIMeanLatent;
+        return  segment.IRIMeanLatent;
 
     }
 
@@ -246,7 +249,9 @@ public class Initialiser
             return Incrementer.GetIRIIncrementForEpisode(segment, _domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants);
         }
 
-        return segment.IRIIncrement; // Return the IRI increment from the input file if the segment has not been treated since the HSD survey
+        // Return the IRI increment from the input file if the segment has not been treated since the HSD survey. Clip at zero to avoid any negative
+        // increments which would not make sense in this context
+        return Math.Max(0, segment.IRIIncrement); 
 
     }
 
@@ -344,49 +349,23 @@ public class Initialiser
     /// </summary>
     /// <param name="segment"></param>
     /// <returns></returns>
-    private double GetInitialPDIValue(RoadSegmentMC segment)
-    {
-        double surveyAge = GetHSDSurveyAge(segment);
-        
-        // If segment has been rehabilitated, return the lookup value for the rutting reset
-        bool hasBeenRehabilitated = segment.PavementAge < surveyAge;
-        if (hasBeenRehabilitated)
-        {
-            return 0; // Assume rehab completely resets PDI to zero
-            
-        }
-        
-        // If segment has been resurfaced, determine the rutting exceedance and the reset
-        bool hasBeenResurfaced = segment.SurfaceAge < surveyAge;
-        if (hasBeenResurfaced)
-        {
-            return Math.Max(0.1, segment.PavementDistressIndex);             
-        }
-        
-        return segment.PavementDistressIndex; // Return the PDI value from the input file if the segment has not been treated since the HSD survey
-    }
-
-    /// <summary>
-    /// Get the initial Surface Distress Index (SDI) value, taking into account the HSD survey age and the Surfacing age. There are 
-    /// two possibilities:
-    /// <para>1. The HSD survey is older than the Surface Age: In this case we presume the segment has been resurfaced ore rehabilitated
-    /// after the survey and return zero since we assume resurfacing and rehabilitation completely resets SDI
-    /// <para>2. The HSD survey is not older than the Surface Age - return the SDI value from the input file    
-    ///</para>    
-    /// </summary>
-    /// <param name="segment"></param>
-    /// <returns></returns>
-    private double GetInitialSDIValue(RoadSegmentMC segment)
+    private void SetInitialConditionStateValues(RoadSegmentMC segment)
     {
         double surveyAge = GetHSDSurveyAge(segment);
 
-        // If segment has been resurfaced or rehabilitated, return the lookup value for the SDI reset
+        // If segment has been resurfaced or rehabilitated, set the distress state values to the appropriate reset value
         bool hasBeenTreated = segment.SurfaceAge < surveyAge;
-        if (hasBeenTreated) return 0; // Assume resurfacing completely resets SDI to zero
-                        
-        return segment.SurfaceDistressIndex; // Return the SDI value from the input file if the segment has not been treated since the HSD survey
+        if (hasBeenTreated)
+        {
+            // For initialisation, minimise random effects and assume both Rehab and Resurfacing resets state completely.
+            segment.PavementDistressState = "E0-S0"; 
+            segment.SurfacingDistressState = "E0-S0";
+            segment.FlushingDistressState = "E0-S0"; 
+        }
+        //No change if not treated, we adopt the value in the input file.        
     }
 
+    
 
 
     #endregion

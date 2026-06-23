@@ -86,8 +86,7 @@ public class Resetter
         segment.TextureIncrementEpisodeLength = 1;  // Reset episode length to 1 since we are drawing a new increment for the episode
 
         // Reset PDI and SDI based on treatment type. 
-        ResetPavementDistressIndex(segment, _domainModel.SubModels, treatment.TreatmentName, _domainModel.Constants, _frameworkModel.Random, isRehabTreatment);
-        ResetSurfacingDistressIndex(segment, _domainModel.SubModels, treatment.TreatmentName, _domainModel.Constants, _frameworkModel.Random);
+        ResetDistressStates(segment, _domainModel.SubModels, _frameworkModel.Random, isRehabTreatment);
 
 
         // Maintenance is set to Zero in the treatment period. This ensures that the influence of past maintenance
@@ -402,7 +401,7 @@ public class Resetter
 
     #endregion
 
-    #region PDI and SDI reset
+    #region Distress State Reset
 
     /// <summary>
     /// Use transition probability models to get the next state for Pavement, Surfacing and Flushing Distress

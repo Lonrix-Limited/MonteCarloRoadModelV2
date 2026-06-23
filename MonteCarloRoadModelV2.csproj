@@ -7,9 +7,18 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
-  <Target Name="CopyDllToDestination" AfterTargets="Build">
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="C:\Users\fritz\Juno Services Dropbox\projects\nzta\2026\sh_forecast_model\monte_carlo\cassandra\domain_model\" />
-  </Target>
+	
+
+	<ItemGroup>
+		<DomainModelDropTargets Include="C:\Users\fritz\Juno Services Dropbox\projects\nzta\2026\sh_forecast_model\monte_carlo\cassanda_models\short_term_sean\domain_model\" />
+		<DomainModelDropTargets Include="C:\Users\fritz\Juno Services Dropbox\projects\nzta\2026\sh_forecast_model\monte_carlo\cassanda_models\historic_calibrate\domain_model\" />
+		<DomainModelDropTargets Include="C:\Users\fritz\Juno Services Dropbox\projects\nzta\2026\sh_forecast_model\monte_carlo\cassanda_models\current_debug\domain_model\" />
+	</ItemGroup>
+
+	<Target Name="CopyDllToDestination" AfterTargets="Build">
+		<Copy SourceFiles="$(TargetPath)"
+			  DestinationFolder="%(DomainModelDropTargets.Identity)" />
+	</Target>
 
   <ItemGroup>
     <ProjectReference Include="..\..\cassandra_main\JCass_Core\JCass_Core.csproj" />

@@ -309,12 +309,8 @@ public class RoadSegmentMC
         get => _onrc;
         set => _onrc = value?.ToLower() ?? string.Empty;
     }
-            
-    /// <summary>
-    /// Annual Rainfall, in mm
-    /// </summary>
-    public double RainfallMM { get; set; }
-
+           
+    
 
     /// <summary>
     /// Road class based on ONRC, with values 'l', 'm' and 'h' for low, medium and high traffic respectively. This classification
@@ -610,6 +606,80 @@ public class RoadSegmentMC
     #endregion
 
     #region Helper Methods
+
+    /// <summary>
+    /// Parses the state key into an Extent and Severity score, and returns a combined score calculated as Extent * Severity. 
+    /// The state key is expected to be in the format "E{extent}-S{severity}", where {extent} is an integer from 0 to 3 
+    /// and {severity} is an integer from 0 to 2. For example, "E2-S1" would have an Extent score of 2 and a Severity score of 1, resulting 
+    /// in a combined score of 2 * 1 = 2. 
+    /// </summary>
+    /// <param name="stateKey">State key is expected to be in the format "E{extent}-S{severity}", where {extent} is an integer from 0 to 3 
+    /// and {severity} is an integer from 0 to 2.</param>
+    /// <returns>Combined score calculated as Extent * Severity.</returns>
+    public static double GetStateScore(string stateKey)
+    {
+        string[] values = stateKey.Split('-');
+        if (values.Length != 2) throw new Exception($"Invalid state key format: {stateKey}. Expected format is 'E{{extent}}-S{{severity}}'.");
+        
+        string extentPart = values[0];
+        string severityPart = values[1];
+        double extentScore = 0;
+        double severityScore = 0;
+
+        if (extentPart.StartsWith("E") && double.TryParse(extentPart.Substring(1), out double extent))
+        {
+            extentScore = extent;
+        }
+        else
+        {
+            throw new Exception($"Invalid extent format: {extentPart}. Expected format is 'E{{extent}}'.");
+        }
+
+        if (severityPart.StartsWith("S") && double.TryParse(severityPart.Substring(1), out double severity))
+        {
+            severityScore = severity;
+        }
+        else
+        {
+            throw new Exception($"Invalid severity format: {severityPart}. Expected format is 'S{{severity}}'.");
+        }
+
+        return extentScore * severityScore;
+    }
+
+    /// <summary>
+    /// Parses the state key into an Extent estimate ranging from 0 to 1. This is used to estimate physical extent of distress on the segment 
+    /// based on the state key. This is a best estimate of the extent of repair work to be done based on the extent score. Thus maximum
+    /// extent (E3) does not necessarily correspond to 100% of the segment needing repair, but rather a high extent of repair work needed. The mapping is as follows:
+    /// 'E0' -> 0% extent (return 0.0)
+    /// 'E1' -> 10% extent (return 0.1)
+    /// 'E2' -> 30% extent (return 0.3)
+    /// 'E3' -> 50% extent (return 0.5)
+    /// </summary>
+    /// <param name="stateKey">State key is expected to be in the format "E{extent}-S{severity}", where {extent} is an integer from 0 to 3 
+    /// and {severity} is an integer from 0 to 2.</param>
+    /// <returns>Extent estimate ranging from 0 to 1.</returns>
+    public static double GetExtentEstimateFromStateScore(string stateKey)
+    {
+        string[] values = stateKey.Split('-');
+        if (values.Length != 2) throw new Exception($"Invalid state key format: {stateKey}. Expected format is 'E{{extent}}-S{{severity}}'.");
+
+        string extentPart = values[0];
+        switch (extentPart)
+        {
+            case "E0":
+                return 0.0;
+            case "E1":
+                return 0.1;
+            case "E2":
+                return 0.3;
+            case "E3":  
+                return 0.5;
+            default:
+                throw new Exception($"Invalid extent format: {extentPart}. Expected format is 'E{{extent}}'.");
+        }
+    }
+
 
     /// <summary>
     /// Updates the sinks mapping back to parameter values in the model. 

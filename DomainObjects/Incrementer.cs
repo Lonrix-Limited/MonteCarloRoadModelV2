@@ -270,8 +270,7 @@ public class Incrementer
             { "pre_surf_mtc_extent", segment.MaintenanceSurfacing },
             { "adt", segment.AverageDailyTraffic },
             { "heavy_perc", segment.HeavyVehiclePercentage },
-            { "surf_thick", segment.SurfaceThickness },
-            { "rainfall", segment.RainfallMM },
+            { "surf_thick", segment.SurfaceThickness },            
             { "surf_class", segment.SurfaceClassForRules },
             { "surf_count", segment.SurfaceNumberOfLayers }
         };

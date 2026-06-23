@@ -11,80 +11,55 @@ public static class SurfacingNeedsIndexCalculator
 
     public static double GetSurfacingNeedsIndex(RoadSegmentMC segment, Constants constants, int period)
     {
-        return GetSurfacingNeedsIndexWithoutDistressData(segment, constants, period);
-
-        //if (segment.SurfaceDistressIndex >= 0) // If SDI is available, use it in the calculation
-        //{
-        //    return GetSurfacingNeedsIndexWithDistressDataAvailable(segment, constants, period);
-        //}
-        //else // If SDI is not available, fall back to using rut depth and surface distress index only
-        //{
-        //    return GetSurfacingNeedsIndexWithoutDistressData(segment, constants, period);
-        //}
-    }
-
-    private static double GetSurfacingNeedsIndexWithoutDistressData(RoadSegmentMC segment, Constants constants, int period)
-    {
-        
-        double suMaintFactor = segment.MaintenanceSurfacing * 10;
-        double potholeFactor = segment.MaintenancePotfill * 5;
-
-        double baseSNI = suMaintFactor + potholeFactor;
+        // Get the base SNI score from the surfacing distress state. Should range from zero to 6.
+        // Multiply by 10 to get a value between 0 and 60.
+        double baseSNI = RoadSegmentMC.GetStateScore(segment.SurfacingDistressState) * 10;
 
         if (segment.SurfaceClass == "cs")
-        {            
-            if (segment.SurfaceAchievedLifePercent < constants.MinSlaToResurfaceCs) return 0.0; // If surface has not achieved a minimum percentage of its expected life, then surface treatment need is zero
-            if (segment.RutMeanObserved > constants.MaxRutForPreservationCS) return 0.0; // If rut is above a certain threshold, then surface treatment need is zero
+        {
+            // Check if the segment length is within the range for chipseal application. If not, then surface treatment need is zero.
+            if (segment.LengthInMetre < constants.MinimumLengthForChipseal) return 0.0;
+            if (segment.LengthInMetre > constants.MaximumLengthForChipseal) return 0.0;
+
+            // If surface has not achieved a minimum percentage of its expected life, then surface treatment need is zero
+            if (segment.SurfaceAchievedLifePercent < constants.MinSlaToResurfaceCs) return 0.0;
+
+            // If rut is above a certain threshold, then surface treatment need is zero
+            if (segment.RutMeanObserved > constants.MaxRutForPreservationCS) return 0.0; 
 
             // Do not consider surface treatment if number of layers is above specified threshold (stability risk).
-            if (segment.SurfaceNumberOfLayers > constants.MaxSealCountForChipSeal) return 0.0;      
-            
+            if (segment.SurfaceNumberOfLayers > constants.MaxSealCountForChipSeal) return 0.0;
+
             double lowTextureFactor = Math.Max(0, constants.TextureThresholdForChipSeal - segment.TextureMeanObserved) * constants.TexturePenaltyFactorForChipSeal;
-            double rutPenalty = Math.Min(constants.TSSExcessRutThresh - segment.RutMeanObserved, 0); // Apply penalty (negative value) if rut depth exceeds the threshold, otherwise no penalty
-            baseSNI += (lowTextureFactor + rutPenalty);
-            return Math.Max(0, baseSNI);
-        }
-        else if (segment.SurfaceClass == "ac" || segment.SurfaceClass == "ogpa" || segment.SurfaceClass == "slurry")
-        {                     
-            if (segment.SurfaceAchievedLifePercent < constants.MinSlaToResurfaceACandOGPA) return 0.0; // If surface has not achieved a minimum percentage of its expected life, then surface treatment need is zero
-            if (segment.RutMeanObserved > constants.MaxRutForPreservationAC) return 0.0; // If rut is above a certain threshold, then surface treatment need is zero            
-            return Math.Max(0, baseSNI);
-        }
-        else
-        {
-            // For other surface classes, we do not have specific thresholds or adjustments, so we just return the base SNI if it is above zero, otherwise return zero.
-            return Math.Max(0, baseSNI);
-        }
 
-    }
+            // Flushing state score ranges from 0 to 6, multiply by 10 to get a value between 0 and 60.
+            double flushingStateScore = RoadSegmentMC.GetStateScore(segment.FlushingDistressState) * constants.FlushingPenaltyFactor;
 
-    private static double GetSurfacingNeedsIndexWithDistressDataAvailable(RoadSegmentMC segment, Constants constants, int period)
-    {
-
-        double baseSNI = GetSurfacingNeedsIndexWithoutDistressData(segment, constants, period); // Start with the SNI calculated without distress data
-        baseSNI += segment.SurfaceDistressIndex;
-
-        if (segment.SurfaceClass == "cs")
-        {
-            // Do not consider surface treatment if pavement distress is above specified threshold
-            if (segment.PavementDistressIndex > constants.MaxPDIForChipsealResurfacing) return 0.0;
-            if (segment.SurfaceDistressIndex < constants.MinSdiToResurfaceCs) return 0.0; // If SDI is very low, then surface treatment need is zero regardless of PDI or rut depth
-            
-            return Math.Max(0, baseSNI);
-
+            baseSNI += lowTextureFactor + flushingStateScore;            
         }
         else if (segment.SurfaceClass == "ac" || segment.SurfaceClass == "ogpa" || segment.SurfaceClass == "slurry")
         {
-            if (segment.PavementDistressIndex > constants.MaxPDIforACorOGPAResurfacing) return 0.0;
-            if (segment.SurfaceDistressIndex < constants.MinSdiToResurfaceACandOGPA) return 0.0; // If SDI is very low, then surface treatment need is zero regardless of PDI or rut depth
-            
-            return Math.Max(0, baseSNI);
+            // Check if the segment length is within the range for AC/OGPA application. If not, then surface treatment need is zero.
+            if (segment.LengthInMetre < constants.MinimumLengthForACorOGPA) return 0.0;
+            if (segment.LengthInMetre > constants.MaximumLengthForACorOGPA) return 0.0;
+
+            // If surface has not achieved a minimum percentage of its expected life, then surface treatment need is zero
+            if (segment.SurfaceAchievedLifePercent < constants.MinSlaToResurfaceACandOGPA) return 0.0;
+
+            // If rut is above a certain threshold, then surface treatment need is zero                        
+            if (segment.RutMeanObserved > constants.MaxRutForPreservationAC) return 0.0; 
         }
-        else
+
+        // If within the window to consider Skid Resistance, then add to the SNI if Skid Resistance is below the threshold. 
+        if (period <= constants.SkidResistanceMaxPeriod)
         {
-            // For other surface classes, we do not have specific thresholds or adjustments, so we just return the base SNI if it is above zero, otherwise return zero.
-            return Math.Max(0, baseSNI);
+            double skidBelowTLPercent = segment.SkidResistanceBelowTLPercent;  //Value from 0 to 100
+            baseSNI += skidBelowTLPercent;
         }
+
+        return baseSNI;
     }
+
+
 
 }

@@ -71,15 +71,12 @@ public static class TriggerChipseals
             if (segment.CanRehabFlag == 0) return; // If the segment is not eligible for rehabilitation, do not add a treatment
 
             string treatmentName = "cs_rehab";
-
-            double pdi = segment.PavementDistressIndex;
-
+            
             double tssScore = TreatmentSuitabilityScorer.GetTSSForRehabilitation(segment, domainModel, iPeriod);
             if (tssScore <= 0) return; // If the TSS score is below the minimum allowed, do not add a treatment
 
             string reason = $"SLA={Math.Round(segment.SurfaceAchievedLifePercent, 1)}";
-            string comment = $"PDI={Math.Round(pdi, 1)}, TSS={Math.Round(tssScore, 2)}";
-
+            string comment = $"PDS={segment.PavementDistressState}, SDS={segment.SurfacingDistressState}, TSS={Math.Round(tssScore, 2)}";
             double quantity = segment.AreaSquareMetre;
             var unitRateSet = lookups["cs_rehab_rate"];
             if (!unitRateSet.ContainsKey(segment.ONRC)) throw new Exception($"Unit rate for ONRC category '{segment.ONRC}' not found in lookup set 'cs_rehab_rate'.");
@@ -100,7 +97,7 @@ public static class TriggerChipseals
     {
         try
         {
-            if (segment.PavementDistressIndex <= 0.0) return; // If preseal area fraction is zero or negative, do not add a treatment
+            if (RoadSegmentMC.GetExtentEstimateFromStateScore(segment.PavementDistressState) <= 0.0) return; // If preseal area fraction is zero or negative, do not add a treatment
 
             double tssScore = 0;
             if (segment.CanRehabFlag == 1)
@@ -117,14 +114,12 @@ public static class TriggerChipseals
             }
 
             if (tssScore <= 0) return; // If the TSS score is below the minimum allowed, do not add a treatment
-
-            double pdi = segment.PavementDistressIndex;
-
+            
             string reason = $"SLA={Math.Round(segment.SurfaceAchievedLifePercent, 1)}";
-            string comment = $"PDI={Math.Round(pdi, 1)}, TSS={Math.Round(tssScore, 2)}";
+            string comment = $"PDS={segment.PavementDistressState}, SDS={segment.SurfacingDistressState}, TSS={Math.Round(tssScore, 2)}";
 
             // PDI is a percentage value that indicates the fraction of the area that needs pre-sealing
-            double treatmentAreaFraction = segment.PavementDistressIndex / 100.0;
+            double treatmentAreaFraction = RoadSegmentMC.GetExtentEstimateFromStateScore(segment.PavementDistressState);
             string treatmentName = "cs_preseal";
 
             var unitRateSet = lookups["unit_rates_general"];
@@ -148,15 +143,11 @@ public static class TriggerChipseals
         try
         {
             string treatmentName = "cs_resurf";
-
-            // For preservation, if PDI is above the maximum threshold, do not add a treatment
-            if (segment.PavementDistressIndex > domainModel.Constants.MaxPDIForChipsealResurfacing) return;
-
+            
             double tssScore = TreatmentSuitabilityScorer.GetTSSForPreservationTreatment(segment, domainModel, iPeriod);
 
-            double sdi = segment.SurfaceDistressIndex;
             string reason = $"SLA={Math.Round(segment.SurfaceAchievedLifePercent, 1)}";
-            string comment = $"SDI={Math.Round(sdi, 1)}, TSS={Math.Round(tssScore, 2)}";
+            string comment = $"PDS={segment.PavementDistressState}, SDS={segment.SurfacingDistressState}, TSS={Math.Round(tssScore, 2)}";
 
             var unitRateSet = lookups["unit_rates_general"];
             if (!unitRateSet.ContainsKey(treatmentName)) throw new Exception($"Unit rate for Treatment '{treatmentName}' not found in lookup set 'unit_rates_general'.");
