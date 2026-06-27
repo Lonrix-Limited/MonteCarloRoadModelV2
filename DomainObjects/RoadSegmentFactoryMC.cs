@@ -1,4 +1,5 @@
 ﻿
+using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.EMMA;
 using JCass_Core.Utils;
 using JCass_ModelCore.Models;
@@ -55,7 +56,8 @@ public static class RoadSegmentFactoryMC
         segment.SurfaceThickness = model.GetInputDataNumber(segment.ElementIndex, "inp_surf_thick");
 
         // Pavement        
-        segment.PavementDate = GetDateFromISO(model.GetInputDataText(segment.ElementIndex, "inp_pave_date"), "Pavement Date");       
+        segment.PavementDate = GetDateFromISO(model.GetInputDataText(segment.ElementIndex, "inp_pave_date"), "Pavement Date");   
+        segment.PavementRemainingLife = model.GetInputDataNumber(segment.ElementIndex, "inp_pave_remain_life");
 
         // High Speed Data - Rutting, Roughness (IRI) and Texture Depth
         segment.HSDSurveyDate = GetDateFromISO(model.GetInputDataText(segment.ElementIndex, "inp_hsd_survey_date"),"HSD Survey Date");
@@ -90,6 +92,9 @@ public static class RoadSegmentFactoryMC
 
         segment.EarliestTreatmentPeriod = Convert.ToInt32(model.GetInputDataNumber(segment.ElementIndex, "inp_earliest_treat_period"));
         segment.NextSurface = model.GetInputDataText(segment.ElementIndex, "inp_next_surf").ToLower();
+
+        // Exogenous Benefit 
+        segment.ExogenousBenefit = model.GetInputDataNumber(segment.ElementIndex, "inp_exo_benefit");
 
         return segment;
     }
@@ -170,7 +175,16 @@ public static class RoadSegmentFactoryMC
         // Candidate Selection from last period
         segment.CandidateSelectionOutcome = textParamValues["par_trigg_info"];
 
-        segment.NumberOfTreatments = numParamValues["par_treat_count"]; 
+        segment.NumberOfTreatments = numParamValues["par_treat_count"];
+
+        // If the number of treatments is greater than zero, we need to override the NextTreatment that is set in the input/raw data.
+        // We assume for now that the NextTreatment matches the current surfacing class once a treatment has been placed. The
+        // NextTreatment code in the input data is there for customised, client-specific redirection of the next treatment. Once
+        // the element has been treated, this is no longer relevant, and thus we override it here.
+        if (segment.NumberOfTreatments > 0)
+        {
+            segment.NextSurface = segment.SurfaceClass;
+        }
 
 
         // Ensure that the method to re-calculate index values is called after return
@@ -225,6 +239,19 @@ public static class RoadSegmentFactoryMC
                 return Convert.ToDouble(model.Lookups["surf_life_exp"]["default_ogpa"]);
             default:
                 throw new Exception($"Unexpected surface class '{segment.SurfaceClass}' for elementIndex {segment.ElementIndex}. Cannot determine default expected surface life.");
+        }
+    }
+
+    public static double GetExpectedPavementLifeSafe(ModelBase model, string onrcCategory, int elementIndex )
+    {
+        Dictionary<string, object> pavementLifeLookup = model.Lookups["pavement_expected_life"];
+        if (pavementLifeLookup.ContainsKey(onrcCategory))
+        {
+            return Convert.ToDouble(pavementLifeLookup[onrcCategory]);
+        }
+        else
+        {
+            throw new Exception($"Unexpected ONRC class '{onrcCategory}' for elementIndex {elementIndex}. Cannot determine expected pavement life.");
         }
     }
 

@@ -23,11 +23,11 @@ public class TreatmentsTrigger
     {        
         List<TreatmentInstance> triggeredTreatments = new List<TreatmentInstance>();
 
-        if (period > 2 && segment.ElementIndex == 10023)
+        if (period >= 6 && segment.ElementIndex == 17550)
         {
             _ = 0; // breakpoint anchor — set/remove IDE breakpoint here at runtime
         }
-
+                
         // Check if the segment passes the Candidate Selection checks. If not, return an empty list.
         if (segment.CandidateSelectionOutcome.StartsWith("ok") == false) return triggeredTreatments;
 

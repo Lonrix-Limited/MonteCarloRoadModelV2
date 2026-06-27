@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using DocumentFormat.OpenXml.Drawing.Charts;
@@ -43,12 +44,9 @@ public class Resetter
         segment.AverageDailyTraffic = segment.AverageDailyTraffic * (1 + segment.TrafficGrowthPercent / 100);
         // No need to reset HCV count as it is automatically calculated based on the AverageDailyTraffic and HCVPercent
 
-        segment.PavementAge = segment.PavementAge + 1;
-        if (treatment.TreatmentName.ToLower().Contains("rehab")) segment.PavementAge = 0;  // Reset pavement age to 0 for rehab treatments. 
-
-        segment.PavementRemainingLife = Convert.ToDouble(_frameworkModel.Lookups["pavement_expected_life"][segment.ONRC]);
-
-        // No need to update Pavement Life Achieved and HCV Risk because it is automatically calculated based on the HCV and Pavement Life Achieved
+        // Update pavement age and remaining life based on the treatment being applied. For rehab, reset to expected life; for
+        // resurfacing, increment age and decrement remaining life.
+        UpdatePavementPropertiesForTreatment(segment, treatment, isRehabTreatment);
         
         // Update surfacing age, class, material, thickness, function, expected life based on the treatment being applied. 
         UpdateSurfacingPropertiesForTreatment(segment, treatment, isRehabTreatment);
@@ -111,8 +109,28 @@ public class Resetter
 
     #endregion
 
-    #region Surfacing Properties Reset
+    #region Surfacing and Pavement Properties Reset
 
+    /// <summary>
+    /// Reset pavement age and remaining life based on the treatment being applied. For rehab, reset to expected life; for resurfacing, i
+    /// ncrement age and decrement remaining life.
+    /// </summary>    
+    private void UpdatePavementPropertiesForTreatment(RoadSegmentMC segment, TreatmentInstance treatment, bool isRehabTreatment)
+    {        
+        if (isRehabTreatment)
+        {
+            segment.PavementAge = 0;
+            // Look up the expected pavement life based on the ONRC category of the segment. 
+            double expectedPavementLife = Convert.ToDouble(_frameworkModel.Lookups["pavement_expected_life"][segment.ONRC]);
+            segment.PavementRemainingLife = expectedPavementLife;  //Remaining life is reset to the expected life after a rehab treatment
+        }
+        else
+        {
+            segment.PavementAge = segment.PavementAge + 1;
+            segment.PavementRemainingLife = segment.PavementRemainingLife - 1;
+        }
+        // No need to update Pavement Life Achieved because it is automatically calculated based on the Pavement Age and Pavement Remaining Life
+    }
 
     /// <summary>
     /// Updates surfacing properties of the given road segment based on the specified treatment. 
@@ -128,6 +146,13 @@ public class Resetter
         segment.SurfaceAge = 0;  
         segment.SurfaceMaterial = GetSurfaceMaterialAfterTreatment(treatment.TreatmentName);
         segment.SurfaceClass = segment.SurfaceMaterial; // After treatment,we simplify material name to be the same as surface class
+        segment.NextSurface = segment.SurfaceClass;     //For now, assume policy dictates next surface to be the same as current.
+
+        if (segment.ElementIndex == 17550)
+        {
+            _ = 0; // breakpoint anchor — set/remove IDE breakpoint here at runtime
+        }
+
         if (isRehabTreatment)
         {
             segment.SurfaceThickness = Convert.ToDouble(_frameworkModel.Lookups["surf_thickness_new"][segment.SurfaceMaterial]);

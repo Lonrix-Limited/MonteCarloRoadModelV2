@@ -11,8 +11,7 @@ public static class CandidateSelector
 {
 
     public static string GetCandidateSelectionOutcome(RoadSegmentMC segment, Constants constants, int periodsToNextTreatment)
-    {
-
+    {        
         if (segment.CanTreatFlag == 0) return "treat flag is 0";
 
         // The CSA flag will be evaluated in the NEXT period. However, periodsToNextTreatment would have been evaluated by the framework model in
@@ -37,12 +36,21 @@ public static class CandidateSelector
         {
             if (segment.SecondCoatNeeded) return "ok - 2nd coat needed";            
             if (segment.SurfaceAchievedLifePercent < constants.CSMinSlaToTreatCs) return "sla too low";
+
+            //If the segment was resurfaced in the current period and constants.CSMinSlaToTreatCs is set to zero, then a
+            //newly surfaced segment will be classified as 'ok' unless we explicity check for this case. Important! Only
+            //do this after checking if a second coat is needed so we do not exclude second coat candidates.
+            if (segment.SurfaceAge == 0) return "just resurfaced";  
             return "ok";
         }
         else if (TriggerAsphalts.NextSurfacingIsAsphaltic(segment))
         {
             // Candidate Selection Filters:            
             if (segment.SurfaceAchievedLifePercent < constants.CSMinSlaToTreatAc) return "sla too low";
+            //If the segment was resurfaced in the current period and constants.CSMinSlaToTreatCs is set to zero, then a
+            //newly surfaced segment will be classified as 'ok' unless we explicity check for this case. Important! Only
+            //do this after checking if a second coat is needed so we do not exclude second coat candidates.
+            if (segment.SurfaceAge == 0) return "just resurfaced";
             return "ok";
         }
         else

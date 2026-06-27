@@ -17,6 +17,8 @@ public class Constants
     // General
     private DateTime _baseDate;
     private int _minimiseStochasticEffectsPeriod;
+    private bool _hasConditionStateData;
+    private bool _usePavementRemainingLife;
     
     // Related to Candidate Selection
     private double _minSlaToTreatAc;
@@ -82,6 +84,24 @@ public class Constants
     public int MinimiseStochasticEffectsPeriod
     {
         get { return _minimiseStochasticEffectsPeriod; }
+    }
+
+    /// <summary>
+    /// Flag to indicate if there is valid condition state data in the input file and whether condition state information 
+    /// should be used in RNI and SNI calculations
+    /// </summary>
+    public bool HasConditionStateData
+    {
+        get { return _hasConditionStateData; }
+    }
+
+    /// <summary>
+    /// Flag to indicate if there are reliable estimates of Pavement Expected life AND whether Pavement Remaining Life 
+    /// should be used in Rehab Need Index calculation
+    /// </summary>
+    public bool UsePavementRemainingLife
+    {
+        get { return _usePavementRemainingLife;}
     }
 
     #endregion
@@ -626,7 +646,9 @@ public class Constants
         string baseDateStr = (string)lookupSets["general"]["base_date"];
         _baseDate = JCass_Core.Utils.HelperMethods.ParseISODateNoTime(baseDateStr);
         _minimiseStochasticEffectsPeriod = Convert.ToInt32(lookupSets["general"]["minimise_stochastic_effects_period"]);
-
+        _usePavementRemainingLife = Convert.ToBoolean(lookupSets["general"]["use_pavement_remaining_life"]);
+        _hasConditionStateData = Convert.ToBoolean(lookupSets["general"]["has_condition_state_data"]);
+        
         // Candidate Selection related constants
         _min_periods_to_next_treat = Convert.ToInt32(lookupSets["candidate_selection"]["min_periods_to_next_treat"]);        
         _minSlaToTreatAc = Convert.ToDouble(lookupSets["candidate_selection"]["min_sla_to_treat_ac"]);

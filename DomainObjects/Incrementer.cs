@@ -14,6 +14,25 @@ public class Incrementer
     private ModelBase _frameworkModel;
     private MonteCarloRoadModelV2 _domainModel;
 
+    /// <summary>
+    /// Minimum rut increment to prevent unrealistic negative increments. We allow some negative increments to account for maintenance effects, but we set 
+    /// a lower bound to avoid extreme values. TODO: this can possibly be set in lookups instead of being hardcoded here. 
+    /// </summary>
+    private double _minRutIncrement = -0.2;
+
+    /// <summary>
+    /// Minimum IRI increment to prevent unrealistic negative increments. We allow some negative increments to account for maintenance effects, but we set
+    /// a lower bound to avoid extreme values. TODO: this can possibly be set in lookups instead of being hardcoded here.
+    /// </summary>
+    private double _minIRIIncrement = -0.1;
+
+    /// <summary>
+    /// Maximum texture increment to prevent unrealistic positive increments. We allow some positive increments to account for maintenance effects, but we set
+    /// a upper bound to avoid extreme values. TODO: this can possibly be set in lookups instead of being hardcoded here.
+    /// </summary>
+    private double _maxTextureIncrement = 0.25; 
+
+
     public Incrementer(ModelBase frameworkModel, MonteCarloRoadModelV2 domainModel)
     {
         _frameworkModel = frameworkModel ?? throw new ArgumentNullException(nameof(frameworkModel), "Domain model cannot be null");
@@ -22,6 +41,11 @@ public class Incrementer
 
     public RoadSegmentMC Increment(RoadSegmentMC segment, int period)
     {
+
+        if (segment.ElementIndex == 17477 && period > 5)
+        {
+            _ = 9;
+        }
 
         // Increment all properties related to model parameters
         // Keep the code same order as the model parameter list
@@ -165,9 +189,14 @@ public class Incrementer
         else
         {           
             // Need to draw a new increment for rut and IRI, and reset the episode length. Apply calibration factors.
-            segment.RutIncrement = GetRutIncrementForEpisode(segment, _domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants);
-            segment.IRIIncrement = GetIRIIncrementForEpisode(segment, _domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants);
-            
+            segment.RutIncrement = Math.Max(_minRutIncrement, GetRutIncrementForEpisode(segment, _domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants));
+            segment.IRIIncrement = Math.Max(_minIRIIncrement, GetIRIIncrementForEpisode(segment, _domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants));
+
+            if (segment.IRIIncrement < -1.0)
+            {
+                _ = 9;
+            }
+
             //Reset the episode length to 1
             segment.RutAndIRIIncrementEpisodeLength = 1;
         }        
@@ -185,7 +214,7 @@ public class Incrementer
         else
         {
             // Need to draw a new increment for texture, and reset the episode length
-            segment.TextureIncrement = GetTextureIncrementForEpisode(segment, _domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants);            
+            segment.TextureIncrement = Math.Min(_maxTextureIncrement, GetTextureIncrementForEpisode(segment, _domainModel.SubModels, _frameworkModel.Random, _domainModel.Constants));            
            
             //Reset the episode length to 1
             segment.TextureIncrementEpisodeLength = 1;

@@ -605,6 +605,22 @@ public class RoadSegmentMC
 
     #endregion
 
+    #region Exogenous Benefits etc.
+
+    /// <summary>
+    /// Optional factor that represents exegenous benefits of treating the segment, such as strategic 
+    /// importance, social value, or other non-condition related factors. This factor can be included in the MCDA 
+    /// calculation to give additional weight to segments that have higher exogenous benefits. 
+    /// It is set based on input data column 'inp_exogenous_benefit' and can be used to 
+    /// influence the treatment selection process based on client-specific priorities or objectives. 
+    /// Default value is 0.0 (no exogenous benefit) if not specified in input data.
+    /// </summary>
+    /// <remarks>NOTE: currently, this property is not tied to a model parameter. Is is presumed to be static
+    /// over the modelling period and is only set once at initialisation</remarks> 
+    public double ExogenousBenefit { get; set; } = 0.0; 
+
+    #endregion
+
     #region Helper Methods
 
     /// <summary>
@@ -616,8 +632,12 @@ public class RoadSegmentMC
     /// <param name="stateKey">State key is expected to be in the format "E{extent}-S{severity}", where {extent} is an integer from 0 to 3 
     /// and {severity} is an integer from 0 to 2.</param>
     /// <returns>Combined score calculated as Extent * Severity.</returns>
-    public static double GetStateScore(string stateKey)
+    public static double GetStateScore(string stateKey, bool hasConditionStateData)
     {
+        // If there is no condition state data, return 0.0 as the score. This is to handle cases where the segment has no distress data available,
+        // and we want to avoid using assigned defaults in RNI and SNI calculations.
+        if (!hasConditionStateData) return 0.0;
+
         string[] values = stateKey.Split('-');
         if (values.Length != 2) throw new Exception($"Invalid state key format: {stateKey}. Expected format is 'E{{extent}}-S{{severity}}'.");
         

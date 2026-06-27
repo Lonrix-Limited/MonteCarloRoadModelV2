@@ -145,7 +145,7 @@ public static class TriggerAsphalts
             decimal overlayFraction = Convert.ToDecimal(overlayCost / totalCost);
             Dictionary<string, decimal> treatmentFractions = new Dictionary<string, decimal>
             {
-                { "Resurfacing", overlayFraction },
+                { $"Resurfacing-{segment.SurfaceClassForTreatment.ToUpper()}", overlayFraction },
                 { "Pre-Repairs", repairFraction }
             };
             treatment.AssignBudgetCategoryFractions(treatmentFractions);

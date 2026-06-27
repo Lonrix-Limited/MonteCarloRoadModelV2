@@ -25,9 +25,10 @@ public static class RehabilitationNeedsCalculator
                 segment.RutMeanObserved > constants.UnstableRutThreshold) { return 100; }                        
         }
 
-        // Get the pavement distress state score. Should range from zero to 6. Multiply by 10 to get
-        // a value between 0 and 60.
-        double pavementDistressStateScore = RoadSegmentMC.GetStateScore(segment.PavementDistressState) * 10;
+                         
+        // IF there is valid Condition State Data in the input set, then use that to get the pavement distress state score.
+        // Should range from zero to 6. Multiply by 10 to get a value between 0 and 60.
+        double pavementDistressStateScore = RoadSegmentMC.GetStateScore(segment.PavementDistressState, constants.HasConditionStateData) * 10;
 
         // Add rut depth. Since rut is normally between 0 and 20, this will add between 0 and 20 to the RNI.
         double rniScore = pavementDistressStateScore + segment.RutMeanObserved;

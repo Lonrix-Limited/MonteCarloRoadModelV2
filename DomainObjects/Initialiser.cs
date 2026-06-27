@@ -31,7 +31,7 @@ public class Initialiser
         RoadSegmentMC segment = RoadSegmentFactoryMC.GetFromRawData(_frameworkModel, iElemIndex);
 
         // Now do checks on the values and handle any anomalous data        
-        segment.PavementAge = GetPavementAge(segment); 
+        SetPavementAgeAndExpectedLife(segment); 
         segment.SurfaceAge = GetSurfacingAge(segment); 
         
         segment.RutMeanLatent = GetInitialRuttingValue(segment);        
@@ -55,20 +55,37 @@ public class Initialiser
         return segment;
     }
         
-    private double GetPavementAge(RoadSegmentMC segment)
+    private void SetPavementAgeAndExpectedLife(RoadSegmentMC segment)
     {
         try
         {            
             double age = (_domainModel.Constants.BaseDate - segment.PavementDate).TotalDays / 365.25; // Use 365.25 to account for leap years
+                        
+            age = Math.Round(age, 2);   // To duplicate jFunction setup, we must round age to 2 decimals
+            if (age < 0) _frameworkModel.LogMessage($"Pavement date for segment {segment.FeebackCode} is in the future", false);
             
-            // To duplicate jFunction setup, we must round age to 2 decimals
-            age = Math.Round(age, 2);
+            segment.PavementAge = Math.Max(age, 0.01);  //Ensure age is not zero to avoid division by zero errors
 
-            if (age < 0)
+            //If lookup flag indicates the model has valid Pavement Life Data, then we initialise using the expected pavement life from
+            //input data. If not, we initialise using the approximate lookup.
+            if (_domainModel.Constants.UsePavementRemainingLife)
             {
-                _frameworkModel.LogMessage($"Pavement date for segment {segment.FeebackCode} is in the future", false);
+                //Nothing to do here as we expect that remaining life has been set by Factory using input data field 'inp_pave_remain_life'. But do a
+                //check to ensure the value is not a sentinel flag with value -999. If so, issue a warning
+                if (segment.PavementRemainingLife == -999)
+                {
+                    _frameworkModel.LogMessage($"Warning: Pavement remaining life for at least one segment is -999 but you indicated that you want to use remaining life in your model. Check input data.", true);
+                }
             }
-            return age;
+            else
+            {
+                // In this case, we assume input data does not have valid Pavement Life Data, so we calculate the expected pavement life using the
+                // lookup function and set the remaining life accordingly
+                double expectedPavementLife = RoadSegmentFactoryMC.GetExpectedPavementLifeSafe(_frameworkModel, segment.ONRC, segment.ElementIndex);
+                segment.PavementRemainingLife = expectedPavementLife - segment.PavementAge;
+            }
+            
+
         }
         catch(Exception ex)
         {
