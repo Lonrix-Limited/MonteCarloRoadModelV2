@@ -532,12 +532,21 @@ public class RoadSegmentMC
         return SurfacingNeedsIndexCalculator.GetSurfacingNeedsIndex(this, constants, period);
     }
 
+    /// <summary>
+    /// Rehabilitation Needs Index value as calculated at the end of the last Epoch
+    /// </summary>
+    public double RehabiliationNeedsIndex { get; set; } = 0;
 
     /// <summary>
     /// Percentage rank of the Rehabilitation Needs Index value for the segment compared to all other segments in the model. 
     /// </summary>
     public double RehabilitationNeedsIndexRank { get; set; } = 0;
 
+    /// <summary>
+    /// Surface Treatment Needs Index value as calculated at the end of the last Epoch
+    /// </summary>
+
+    public double SurfacingNeedsIndex { get; set; } = 0;
 
     /// <summary>
     /// Percentage rank of the Surface Treatment Needs Index value for the segment compared to all other segments in the model. 
@@ -757,13 +766,16 @@ public class RoadSegmentMC
         numModParamValues("par_treat_count", this.NumberOfTreatments);
 
         // The following are Network Parameters - to be set automatically by the framework model:        
-        //para_sla_rank
-        //para_rut_rank
-        //para_iri_rank
+        //par_sla_rank
+        //par_rut_rank
+        //par_iri_rank
+        //par_rni_rank
+        //par_sni_rank
+
 
     }
 
-    
+
     #endregion
 
 }

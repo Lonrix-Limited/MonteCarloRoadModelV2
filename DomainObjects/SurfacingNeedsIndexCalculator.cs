@@ -16,6 +16,11 @@ public static class SurfacingNeedsIndexCalculator
         // from the surfacing distress state. Should range from zero to 6. Multiply by 10 to get a value between 0 and 60.
         double baseSNI = RoadSegmentMC.GetStateScore(segment.SurfacingDistressState, constants.HasConditionStateData) * 10;
 
+        if (segment.ElementIndex == 29238)
+        {
+            _ = 9;
+        }
+
         if (segment.SurfaceClass == "cs")
         {
             // Check if the segment length is within the range for chipseal application. If not, then surface treatment need is zero.

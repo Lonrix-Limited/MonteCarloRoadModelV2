@@ -164,6 +164,8 @@ public static class RoadSegmentFactoryMC
         segment.SurfacingDistressState = textParamValues["par_sds"];
         segment.FlushingDistressState = textParamValues["par_fds"];
 
+        segment.RehabiliationNeedsIndex = numParamValues["par_rni"];
+        segment.SurfacingNeedsIndex = numParamValues["par_sni"];
         segment.RehabilitationNeedsIndexRank = numParamValues["par_rni_rank"];
         segment.SurfacingNeedsIndexRank = numParamValues["par_sni_rank"];
 

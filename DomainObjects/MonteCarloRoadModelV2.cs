@@ -26,7 +26,18 @@ public class MonteCarloRoadModelV2 : DomainModelBase
     public SubModelDefinitions SubModels { get; set; } = null!;
 
     public RoutineMaintenanceModeller MaintenanceModel = null!;
-    
+
+
+    /// <summary>
+    /// Flag to indicate if the budget for resurfacing is treatment specific. If true, we assume budget categories for Resurfacing are
+    /// in the form "Resurfacing-[SurfaceClass.ToUpper()]". If false, we assume budget categories for Resurfacing are in the form "Resurfacing". So,
+    /// for example, if true, a resurfacing treatment on a surface class "ogpa" will be assigned to the budget category "Resurfacing-OGPA", while if 
+    /// false, it will be assigned to the budget category "Resurfacing". This allows for more granular budgeting for resurfacing treatments based on surface class 
+    /// which is needed when treatment costs for Holding actions are split into Resurfacing and Heavy Maintenance budget fractions.
+    /// </summary>
+
+    public bool BudgetForResurfacingIsTreatmentSpecific { get; set; } = false;
+
     #endregion
 
     public MonteCarloRoadModelV2()
@@ -74,6 +85,9 @@ public class MonteCarloRoadModelV2 : DomainModelBase
             SetupUtilities.SetupReductionDueToPaMaintenanceModels(this, workFolder, this.model.Random);
 
             SetupUtilities.SetupTreatmentSuitabilityScoreModels(this);
+
+            // Check if budget category for resurfacing is in form "Resurfacing-AC" or just "Resurfacing" (i.e. treatment specific or not)
+            this.BudgetForResurfacingIsTreatmentSpecific = this.model.Budget.BudgetCategories.Any(bc => bc.StartsWith("Resurfacing-"));
 
         }
         catch (Exception ex)

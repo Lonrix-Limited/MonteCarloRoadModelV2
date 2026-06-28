@@ -36,12 +36,12 @@ public class TreatmentsTrigger
         // next treatment have now changed since the period has changed
         int periodsToNextTreatment = Convert.ToInt32(infoFromModel["periods_to_next_treatment"]);
         if (periodsToNextTreatment <= _domainModel.Constants.CSMinPeriodsToNextTreat) { return triggeredTreatments; }
-                
+
         //---------------------------------------------------------------------------------------------------------------------------------
         //      If we get here, we know that no second coats or birthday treatments are added.
         //      Now find candidate treatments to add to the optimisation stage
         //---------------------------------------------------------------------------------------------------------------------------------
-
+                
         if (TriggerChipseals.NextSurfacingIsChipsealTreatment(segment))
         {
             return TriggerChipseals.GetTriggeredChipsealTreatments(segment, period, _domainModel, _frameworkModel.Lookups);

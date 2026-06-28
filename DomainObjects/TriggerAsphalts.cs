@@ -21,11 +21,15 @@ public static class TriggerAsphalts
         {
             List<TreatmentInstance> triggeredTreatments = new List<TreatmentInstance>();
                        
-            AddPreservationThinACIfValid(segment, domainModel, period, triggeredTreatments, lookups);
-            AddHoldingThinACIfValid(segment, frameworkModel, domainModel, period, triggeredTreatments, lookups);
-            AddAcHeavyMaintenanceIfValid(segment, period, domainModel, triggeredTreatments, infoFromModel, lookups);
-            AddRehabilitationIfValid(segment, domainModel, period, triggeredTreatments, lookups);
+            if (segment.SurfacingNeedsIndex > 0) AddPreservationThinACIfValid(segment, domainModel, period, triggeredTreatments, lookups);
 
+            if (segment.RehabiliationNeedsIndex > 0)
+            {
+                AddHoldingThinACIfValid(segment, frameworkModel, domainModel, period, triggeredTreatments, lookups);
+                AddAcHeavyMaintenanceIfValid(segment, period, domainModel, triggeredTreatments, infoFromModel, lookups);
+                AddRehabilitationIfValid(segment, domainModel, period, triggeredTreatments, lookups);
+            }
+            
             return triggeredTreatments;
         }
         catch (Exception ex)
@@ -101,7 +105,7 @@ public static class TriggerAsphalts
             if (segment.NextSurface == "cs") return;
 
             // If the current pavement distress state is in the exclusion list for TSS for Holding Actions, then do not add a treatment.
-            if (domainModel.Constants.TSSHoldingExclusionStates.Contains(segment.PavementDistressState)) return;
+            if (domainModel.Constants.HasConditionStateData && domainModel.Constants.TSSHoldingExclusionStates.Contains(segment.PavementDistressState)) return;
 
             // For Holding AC, do not eliminate if asphalt overlay is not allowed (in 'segment.AsphaltOkFlag') because of too high deflection etc.
             // This is because this treatment is assumed to include strengthening repairs to adress weak areas
@@ -143,9 +147,14 @@ public static class TriggerAsphalts
             // Assign the relative fractions of the cost to the appropriate budget categories
             decimal repairFraction = Convert.ToDecimal(repairCost / totalCost);
             decimal overlayFraction = Convert.ToDecimal(overlayCost / totalCost);
+
+            // Get the budget category code for the overlay fraction. The name depends on whether budget categories are treatment-specific or not.
+            // If they are treatment-specific, then the budget category code is "Resurfacing-<treatment name>", otherwise it is just "Resurfacing"
+            string budgetCategoryCodeForOverlay = domainModel.BudgetForResurfacingIsTreatmentSpecific ? $"Resurfacing-{segment.SurfaceClassForTreatment.ToUpper()}" : "Resurfacing";
+
             Dictionary<string, decimal> treatmentFractions = new Dictionary<string, decimal>
             {
-                { $"Resurfacing-{segment.SurfaceClassForTreatment.ToUpper()}", overlayFraction },
+                { budgetCategoryCodeForOverlay, overlayFraction },
                 { "Pre-Repairs", repairFraction }
             };
             treatment.AssignBudgetCategoryFractions(treatmentFractions);

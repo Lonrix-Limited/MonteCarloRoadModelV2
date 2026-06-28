@@ -18,20 +18,30 @@ public static class TriggerChipseals
         {
             List<TreatmentInstance> triggeredTreatments = new List<TreatmentInstance>();
 
+            if (segment.ElementIndex == 29238 && period == 1)
+            {
+                _ = 9;
+            }
+            
             // If we are triggering a ChipSeal treatment, then we need to check if a second coat after Rehabilitation or a follow-up chipseal after Preseal Repairs should be added.
             // Check if second coat after Rehabilitation should be added. If so, since we are forcing it, do not look
             // for other candidate treatments
             AddSecondCoatIfValid(segment, period, triggeredTreatments, lookups);
-            if (triggeredTreatments.Count > 0) return triggeredTreatments;
-            
+
+            //If second coat was added, OR if surface function is 1 (indicating that second coat needs to be added soon), then do not trigger further surfacings.
+            if (segment.SurfaceFunction == "1" || triggeredTreatments.Count > 0) return triggeredTreatments;
+
             //-------------------------------------- Other Treatments if we are not adding a second coat --------------------------------------
 
-            AddPreservationChipsealIfValid(segment, domainModel, period, triggeredTreatments, lookups);
+            if (segment.SurfacingNeedsIndex > 0) AddPreservationChipsealIfValid(segment, domainModel, period, triggeredTreatments, lookups);
 
-            AddPresealRepairIfValid(segment, domainModel, period, triggeredTreatments, lookups);
+            if (segment.RehabiliationNeedsIndex > 0)
+            {
+                AddPresealRepairIfValid(segment, domainModel, period, triggeredTreatments, lookups);
 
-            AddRehabilitationIfValid(segment, domainModel, period, triggeredTreatments, lookups);
-
+                AddRehabilitationIfValid(segment, domainModel, period, triggeredTreatments, lookups);
+            }
+                           
             return triggeredTreatments;
         }
         catch (Exception ex)
@@ -188,7 +198,7 @@ public static class TriggerChipseals
                 double quantity = segment.AreaSquareMetre;
 
                 TreatmentInstance treatment = new TreatmentInstance(segment.ElementIndex, treatmentName, iPeriod, quantity, unitRate, true, reason, reason);
-                treatment.TreatmentSuitabilityScore = 102; // Set a high suitability score for second coat treatments
+                treatment.TreatmentSuitabilityScore = 999; // Set a high suitability score for second coat treatments
                 treatments.Add(treatment);
             }
         }

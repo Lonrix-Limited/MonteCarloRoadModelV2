@@ -10,6 +10,7 @@ using JCass_Core.Statistics;
 using JCass_Data.Objects;
 using JCass_Data.Utils;
 using JCass_Excel;
+using JCass_ModelCore.Models;
 using JCass_ModelCore.MonteCarlo;
 using MonteCarloRoadModelV2.DomainObjects;
 
@@ -17,7 +18,7 @@ namespace MonteCarloRoadModelV2.Utilities;
 
 public static class SetupUtilities
 {
-
+    
     /// <summary>
     /// Helper function to setup the increment residual SD functions for the MonteCarloRoadModelV2 domain model. This reads in the setup codes from a CSV file and 
     /// creates the PieceWiseLinearModel instances for each of the three parameters (rut, IRI, texture). The setup codes in the
