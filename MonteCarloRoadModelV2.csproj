@@ -15,9 +15,12 @@
 		<DomainModelDropTargets Include="C:\Users\fritz\Juno Services Dropbox\projects\nzta\2026\sh_forecast_model\monte_carlo\cassanda_models\current_debug\domain_model\" />
 	</ItemGroup>
 
+	<!-- Drop targets are folders on Fritz's machine. Skip any that do not exist, so the
+	     project still builds on every other machine. -->
 	<Target Name="CopyDllToDestination" AfterTargets="Build">
 		<Copy SourceFiles="$(TargetPath)"
-			  DestinationFolder="%(DomainModelDropTargets.Identity)" />
+			  DestinationFolder="%(DomainModelDropTargets.Identity)"
+			  Condition="Exists('%(DomainModelDropTargets.Identity)')" />
 	</Target>
 
   <ItemGroup>
